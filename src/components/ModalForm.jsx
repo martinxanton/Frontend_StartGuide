@@ -58,7 +58,7 @@ function ModalForm({ show, handleClose }) {
       size="lg"
       show={show}
       onHide={handleClose}
-      backdrop="static"
+      //backdrop="static"
       dialogClassName="modal-dialog-scrollable"
     >
       <Modal.Header>
