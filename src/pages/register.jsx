@@ -1,0 +1,88 @@
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+
+const RegisterPage = () => {
+  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [error, setError] = useState("");
+  const navigate = useNavigate();
+
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    if (!username || !email || !password || !confirmPassword) {
+      setError("Por favor, completa todos los campos");
+    } else if (password !== confirmPassword) {
+      setError("Las contraseñas no coinciden");
+    } else {
+      setError("");
+      // Aquí podrías agregar la lógica para enviar los datos del formulario al servidor
+      navigate("/login");
+    }
+  };
+
+  return (
+    <div className="hero min-h-screen bg-base-200 w-full flex items-center justify-center">
+      <main className="bg-base-100 w-3/12 p-12 rounded-lg shadow-lg">
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <h1 className="text-2xl font-semibold text-center">Registrarse</h1>
+          <div>
+            <label htmlFor="username" className="sr-only">Nombre de usuario</label>
+            <input
+              type="text"
+              className="input input-bordered w-full"
+              id="username"
+              placeholder="Nombre de usuario"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              required
+            />
+          </div>
+          <div>
+            <label htmlFor="email" className="sr-only">Correo electrónico</label>
+            <input
+              type="email"
+              className="input input-bordered w-full"
+              id="email"
+              placeholder="Correo electrónico"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+          </div>
+          <div>
+            <label htmlFor="password" className="sr-only">Contraseña</label>
+            <input
+              type="password"
+              className="input input-bordered w-full"
+              id="password"
+              placeholder="Contraseña"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+          </div>
+          <div>
+            <label htmlFor="confirmPassword" className="sr-only">Confirmar Contraseña</label>
+            <input
+              type="password"
+              className="input input-bordered w-full"
+              id="confirmPassword"
+              placeholder="Confirmar Contraseña"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              required
+            />
+          </div>
+          {error && <div className="text-red-500 text-sm">{error}</div>}
+          <button className="btn btn-primary w-full rounded-full " type="submit">
+            Registrarse
+          </button>
+        </form>
+      </main>
+    </div>
+  );
+};
+
+export default RegisterPage;

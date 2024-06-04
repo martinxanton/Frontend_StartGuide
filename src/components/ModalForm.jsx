@@ -1,6 +1,4 @@
-// ModalForm.jsx
 import React, { useState } from "react";
-import { Modal, Button } from "react-bootstrap";
 import axios from "axios";
 
 function ModalForm({ show, handleClose }) {
@@ -53,30 +51,41 @@ function ModalForm({ show, handleClose }) {
       });
   };
 
+  if (!show) return null;
+
   return (
-    <Modal
-      size="lg"
-      show={show}
-      onHide={handleClose}
-      //backdrop="static"
-      dialogClassName="modal-dialog-scrollable"
-    >
-      <Modal.Header>
-        <Modal.Title>Configuración y Personalización de Perfil</Modal.Title>
-      </Modal.Header>
-      <Modal.Body>
-        <div className="h-100">
+    <div  className="fixed inset-0 flex items-center justify-center z-50">
+      <div className="bg-base-100 rounded-lg shadow-lg overflow-hidden w-full max-w-4xl p-8">
+        <div className="pb-5 flex justify-between items-center">
+          <h2 className="text-xl font-semibold">
+            Configuración y Personalización de Perfil
+          </h2>
+          <button onClick={handleClose} className="btn btn-circle">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-6 w-6"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
+          </button>
+        </div>
+        <div>
           <form
-            className="row justify-content-between"
             onSubmit={handleSubmit}
+            className="grid grid-cols-1 md:grid-cols-2 gap-4"
           >
-            <div className="col-6">
-              <label htmlFor="userName" className="form-label">
-                Nombre del Usuario
-              </label>
+            <div>
               <input
                 type="text"
-                className="form-control"
+                className="input input-bordered w-full"
                 id="userName"
                 name="userName"
                 value={formData.userName}
@@ -84,13 +93,10 @@ function ModalForm({ show, handleClose }) {
                 placeholder="Nombre del Usuario"
               />
             </div>
-            <div className="col-md-6">
-              <label htmlFor="startupName" className="form-label">
-                Nombre de la Startup
-              </label>
+            <div>
               <input
                 type="text"
-                className="form-control"
+                className="input input-bordered w-full"
                 id="startupName"
                 name="startupName"
                 value={formData.startupName}
@@ -98,12 +104,9 @@ function ModalForm({ show, handleClose }) {
                 placeholder="Nombre de la Startup"
               />
             </div>
-            <div className="col-md-6">
-              <label htmlFor="description" className="form-label">
-                Descripción Breve de la Startup
-              </label>
+            <div>
               <textarea
-                className="form-control"
+                className="textarea textarea-bordered w-full"
                 id="description"
                 name="description"
                 value={formData.description}
@@ -111,12 +114,9 @@ function ModalForm({ show, handleClose }) {
                 placeholder="Descripción Breve de la Startup"
               ></textarea>
             </div>
-            <div className="col-md-6">
-              <label htmlFor="mainGoals" className="form-label">
-                Objetivos Principales de la Startup
-              </label>
+            <div>
               <textarea
-                className="form-control"
+                className="textarea textarea-bordered w-full"
                 id="mainGoals"
                 name="mainGoals"
                 value={formData.mainGoals}
@@ -124,12 +124,9 @@ function ModalForm({ show, handleClose }) {
                 placeholder="Objetivos Principales de la Startup"
               ></textarea>
             </div>
-            <div className="col-md-4">
-              <label htmlFor="industry" className="form-label">
-                Industria
-              </label>
+            <div>
               <select
-                className="form-select"
+                className="select select-bordered w-full"
                 id="industry"
                 name="industry"
                 value={formData.industry}
@@ -148,13 +145,9 @@ function ModalForm({ show, handleClose }) {
                 <option value="Otro">Otro</option>
               </select>
             </div>
-
-            <div className="col-md-4">
-              <label htmlFor="developmentStage" className="form-label">
-                Etapa de Desarrollo
-              </label>
+            <div>
               <select
-                className="form-select"
+                className="select select-bordered w-full"
                 id="developmentStage"
                 name="developmentStage"
                 value={formData.developmentStage}
@@ -171,12 +164,9 @@ function ModalForm({ show, handleClose }) {
                 <option value="Consolidación">Consolidación</option>
               </select>
             </div>
-            <div className="col-md-4">
-              <label htmlFor="numberOfEmployees" className="form-label">
-                Número de Empleados
-              </label>
+            <div>
               <select
-                className="form-select"
+                className="select select-bordered w-full"
                 id="numberOfEmployees"
                 name="numberOfEmployees"
                 value={formData.numberOfEmployees}
@@ -190,14 +180,10 @@ function ModalForm({ show, handleClose }) {
                 <option value="Más de 50">Más de 50</option>
               </select>
             </div>
-
-            <div className="col-md-6">
-              <label htmlFor="location" className="form-label">
-                Ubicación Geográfica
-              </label>
+            <div>
               <input
                 type="text"
-                className="form-control"
+                className="input input-bordered w-full"
                 id="location"
                 name="location"
                 value={formData.location}
@@ -205,12 +191,9 @@ function ModalForm({ show, handleClose }) {
                 placeholder="Ubicación Geográfica"
               />
             </div>
-            <div className="col-md-6">
-              <label htmlFor="neededResources" className="form-label">
-                Recursos Necesarios
-              </label>
+            <div>
               <textarea
-                className="form-control"
+                className="textarea textarea-bordered w-full"
                 id="neededResources"
                 name="neededResources"
                 value={formData.neededResources}
@@ -218,13 +201,9 @@ function ModalForm({ show, handleClose }) {
                 placeholder="Recursos Necesarios"
               ></textarea>
             </div>
-
-            <div className="col-md-4">
-              <label htmlFor="mainCompetitors" className="form-label">
-                Competidores Principales
-              </label>
+            <div>
               <textarea
-                className="form-control"
+                className="textarea textarea-bordered w-full"
                 id="mainCompetitors"
                 name="mainCompetitors"
                 value={formData.mainCompetitors}
@@ -232,13 +211,9 @@ function ModalForm({ show, handleClose }) {
                 placeholder="Competidores Principales"
               ></textarea>
             </div>
-
-            <div className="col-md-4">
-              <label htmlFor="strengths" className="form-label">
-                Puntos Fuertes de la Startup
-              </label>
+            <div>
               <textarea
-                className="form-control"
+                className="textarea textarea-bordered w-full"
                 id="strengths"
                 name="strengths"
                 value={formData.strengths}
@@ -246,13 +221,9 @@ function ModalForm({ show, handleClose }) {
                 placeholder="Puntos Fuertes de la Startup"
               ></textarea>
             </div>
-
-            <div className="col-md-4">
-              <label htmlFor="challenges" className="form-label">
-                Desafíos Actuales
-              </label>
+            <div>
               <textarea
-                className="form-control"
+                className="textarea textarea-bordered w-full"
                 id="challenges"
                 name="challenges"
                 value={formData.challenges}
@@ -260,15 +231,13 @@ function ModalForm({ show, handleClose }) {
                 placeholder="Desafíos Actuales"
               ></textarea>
             </div>
+            <button onClick={handleSubmit} className="btn btn-primary col-span-2">
+              Guardar Perfil
+            </button>
           </form>
         </div>
-      </Modal.Body>
-      <Modal.Footer>
-        <Button variant="primary" onClick={handleSubmit}>
-          Guardar Perfil
-        </Button>
-      </Modal.Footer>
-    </Modal>
+      </div>
+    </div>
   );
 }
 
