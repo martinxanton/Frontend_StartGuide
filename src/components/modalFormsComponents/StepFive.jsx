@@ -1,27 +1,6 @@
 import React from "react";
 
-const StepFive  = () => {
-  const rangeList = [
-    "0",
-    "10",
-    "20",
-    "30",
-    "40",
-    "50",
-    "60",
-    "70",
-    "80",
-    "90",
-    "100",
-  ];
-  const developmentStageList = [
-    "Idea",
-    "Prototipo",
-    "Producto Mínimo Viable (MVP)",
-    "Crecimiento Inicial",
-    "Escalamiento",
-    "Otro",
-  ];
+const StepFive  = ({ values, handleInputChange }) => {
 
   return (
     <div className="w-full">
@@ -43,6 +22,8 @@ const StepFive  = () => {
                 className="textarea textarea-bordered w-full resize-none"
                 id="strengths"
                 name="strengths"
+                value={values.strengths}
+                onChange={(e) => handleInputChange("strengths", e.target.value)}
                 placeholder="Ej: Equipo experimentado, tecnología innovadora."
               ></textarea>
         </label>
@@ -56,6 +37,8 @@ const StepFive  = () => {
                 className="textarea textarea-bordered w-full resize-none"
                 id="challenges"
                 name="challenges"
+                value={values.challenges}
+                onChange={(e) => handleInputChange("challenges", e.target.value)}
                 placeholder="Ej: Competencia intensa, financiamiento limitado."
               ></textarea>
         </label>

@@ -1,6 +1,6 @@
 import React from "react";
 
-const StepTwo = () => {
+const StepTwo = ({ values, handleInputChange }) => {
   const rangeList = [
     "0",
     "10",
@@ -14,19 +14,13 @@ const StepTwo = () => {
     "90",
     "100",
   ];
-  const developmentStageList = [
-    "Idea",
-    "Prototipo",
-    "Producto Mínimo Viable (MVP)",
-    "Crecimiento Inicial",
-    "Escalamiento",
-    "Otro",
-  ];
 
   return (
     <div className="w-full">
       <div id="header">
-        <h1 id="title" className="text-2xl font-bold">Detalles Operativos</h1>
+        <h1 id="title" className="text-2xl font-bold">
+          Detalles Operativos
+        </h1>
         <span id="subtitle" className="text-sm text-gray-600 font-medium">
           Información sobre la operación diaria y ubicación
         </span>
@@ -39,7 +33,15 @@ const StepTwo = () => {
               Número aproximado de empleados:
             </span>
           </div>
-          <input type="range" min="0" max="100" className="range mt-2" step="5" />
+          <input
+            type="range"
+            min="0"
+            max="100"
+            className="range mt-2"
+            step="5"
+            value={values.numberOfEmployees}
+            onChange={(e) => handleInputChange("numberOfEmployees", e.target.value)}
+          />
           <div className="w-full flex justify-between text-xs ps-2">
             {rangeList.map((range, index) => (
               <div key={index} className="flex flex-col items-center">
@@ -51,17 +53,17 @@ const StepTwo = () => {
         </label>
         <label className="form-control w-full col-span-2">
           <div className="label">
-            <span className="label-text text-gray-400">
-              Ubicación
-            </span>
+            <span className="label-text text-gray-400">Ubicación</span>
           </div>
           <input
-                type="text"
-                className="input input-bordered w-full"
-                id="location"
-                name="location"
-                placeholder="Ej: Lima, Perú."
-              />
+            type="text"
+            className="input input-bordered w-full"
+            id="location"
+            name="location"
+            value={values.location}
+            onChange={(e) => handleInputChange("location", e.target.value)}
+            placeholder="Ej: Lima, Perú."
+          />
         </label>
       </div>
     </div>

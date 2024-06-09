@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
 import { ModalSetting, ModalProfile, ModalAuth, ModalForms } from '../components';
-import { jwtDecode } from "jwt-decode";
+
 
 function ChatPage() {
   const [showModalForm, setShowModalForm] = useState(true);
@@ -13,17 +13,36 @@ function ChatPage() {
   const [userProfile, setUserProfile] = useState(null);
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
- 
+
   useEffect(() => {
     if (!token) {
       setShowModalAuth(true);
+      setShowModalForm(false);
     } else {
-      const decodedToken = jwtDecode(token);
-      const userId = decodedToken.user.id;
+      // Verificar el token
+      const verifyToken = async () => {
+        try {
+          const response = await fetch("http://localhost:3000/api/profile/protected", {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          });
 
+          if (!response.ok) {
+            throw new Error("Failed to verify token");
+          }
+          return true;
+
+        } catch (error) {
+          console.error("Error verifying token:", error);
+        }
+      }
+      // Obtener el perfil del usuario
       const fetchUserProfile = async () => {
         try {
-          const response = await fetch(`http://localhost:3000/api/user-profile/${userId}`, {
+          const response = await fetch(`http://localhost:3000/api/profile`, {
             method: "GET",
             headers: {
               Authorization: `Bearer ${token}`,
@@ -41,8 +60,42 @@ function ChatPage() {
           console.error("Error fetching user profile:", error);
         }
       };
+      // Verificar si el usuario tiene información en su perfil
+      const verifyInfoUserProfile = async () => {
+        try {
+          const response = await fetch(`http://localhost:3000/api/profile/exists`, {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          });
 
-      fetchUserProfile();
+          if (!response.ok) {
+            throw new Error("Failed to verify user profile");
+          }
+          return await response.json();
+        } catch (error) {
+          console.error("Error fetching user profile:", error);
+        }
+      }
+      console.log("Token:", token);
+
+      if (!verifyToken()) {
+        localStorage.removeItem("token");
+        console.log("Token no verificado");
+      } else {
+        console.log("Token verificado");
+        if (verifyInfoUserProfile()) {
+          console.log("No hay información en el perfil");
+          setShowModalForm(true);
+        } else {
+          console.log("Hay información en el perfil");
+          setShowModalForm(false);
+          fetchUserProfile();
+        }
+      }
+      
     }
   }, [token]);
 

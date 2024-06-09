@@ -1,6 +1,6 @@
 import React from "react";
 
-const StepOne = () => {
+const StepOne = ({ values, handleInputChange }) => {
   const industryList = [
     "Tecnología",
     "Salud",
@@ -23,7 +23,9 @@ const StepOne = () => {
   return (
     <div className="w-full">
       <div id="header">
-        <h1 id="title" className="text-2xl font-bold">Información General</h1>
+        <h1 id="title" className="text-2xl font-bold">
+          Información General
+        </h1>
         <span id="subtitle" className="text-sm text-gray-600 font-medium">
           Proporcione los detalles básicos sobre su startup
         </span>
@@ -38,6 +40,9 @@ const StepOne = () => {
           </div>
           <input
             type="text"
+            id="startupName"
+            value={values.startupName}
+            onChange={(e) => handleInputChange("startupName", e.target.value)}
             placeholder="Ej: Tech Innovations Inc."
             className="input input-bordered w-full"
           />
@@ -51,6 +56,8 @@ const StepOne = () => {
           <textarea
             className="textarea textarea-bordered w-full resize-none"
             id="description"
+            value={values.description}
+            onChange={(e) => handleInputChange("description", e.target.value)}
             name="description"
             placeholder="Ej: Desarrollamos software innovador para la gestión empresarial."
           ></textarea>
@@ -65,12 +72,16 @@ const StepOne = () => {
             className="select select-bordered w-full"
             id="industry"
             name="industry"
+            value={values.industry}
+            onChange={(e) => handleInputChange("industry", e.target.value)}
           >
             <option value="" disabled>
               Selecciona la Industria
             </option>
             {industryList.map((industry, index) => (
-              <option key={index} value={index}>{industry}</option>
+              <option key={index} value={index}>
+                {industry}
+              </option>
             ))}
           </select>
         </label>
@@ -84,12 +95,18 @@ const StepOne = () => {
             className="select select-bordered w-full"
             id="developmentStage"
             name="developmentStage"
+            value={values.developmentStage}
+            onChange={(e) =>
+              handleInputChange("developmentStage", e.target.value)
+            }
           >
             <option value="" disabled>
               Selecciona la Etapa de Desarrollo
             </option>
             {developmentStageList.map((developmentStage, index) => (
-              <option key={index} value={index}>{developmentStage}</option>
+              <option key={index} value={index}>
+                {developmentStage}
+              </option>
             ))}
           </select>
         </label>

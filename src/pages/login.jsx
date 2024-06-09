@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { jwtDecode } from "jwt-decode";
 
 const LoginPage = () => {
   const [username, setUsername] = useState("");
@@ -28,6 +29,8 @@ const LoginPage = () => {
         })
         .then((response) => {
           const { token } = response.data;
+          const decodedToken = jwtDecode(token);
+          const userId = decodedToken.user.id;
           localStorage.setItem("token", token);
           navigate("/");
         })

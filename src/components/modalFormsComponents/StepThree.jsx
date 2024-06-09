@@ -1,27 +1,6 @@
 import React from "react";
 
-const StepThree = () => {
-  const rangeList = [
-    "0",
-    "10",
-    "20",
-    "30",
-    "40",
-    "50",
-    "60",
-    "70",
-    "80",
-    "90",
-    "100",
-  ];
-  const developmentStageList = [
-    "Idea",
-    "Prototipo",
-    "Producto Mínimo Viable (MVP)",
-    "Crecimiento Inicial",
-    "Escalamiento",
-    "Otro",
-  ];
+const StepThree = ({ values, handleInputChange }) => {
 
   return (
     <div className="w-full">
@@ -43,6 +22,8 @@ const StepThree = () => {
                 className="textarea textarea-bordered w-full resize-none"
                 id="mainGoals"
                 name="mainGoals"
+                value={values.mainGoals}
+                onChange={(e) => handleInputChange("mainGoals", e.target.value)}
                 placeholder="Ej: Expandir al mercado internacional, lanzar nuevo producto."
               ></textarea>
         </label>
@@ -56,6 +37,8 @@ const StepThree = () => {
                 className="textarea textarea-bordered w-full resize-none"
                 id="neededResources"
                 name="neededResources"
+                value={values.neededResources}
+                onChange={(e) => handleInputChange("neededResources", e.target.value)}
                 placeholder="Ej: Inversión de capital, talento técnico."
               ></textarea>
         </label>
