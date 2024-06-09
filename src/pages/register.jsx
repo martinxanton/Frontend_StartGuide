@@ -44,8 +44,8 @@ const RegisterPage = () => {
       <main className="bg-base-100 w-3/12 p-12 rounded-lg shadow-lg">
         <form onSubmit={handleSubmit} className="space-y-6">
           <h1 className="text-2xl font-semibold text-center">Registrarse</h1>
-          <div>
-            <label htmlFor="username" className="sr-only">Nombre de usuario</label>
+          <p className="text-sm">¿Ya tienes cuenta? <a href="/auth/login" className="link font-bold">Iniciar sesión</a></p>
+          <label htmlFor="username" className="sr-only">Nombre de usuario</label>
             <input
               type="text"
               className="input input-bordered w-full"
@@ -55,7 +55,6 @@ const RegisterPage = () => {
               onChange={(e) => setUsername(e.target.value)}
               required
             />
-          </div>
           <div>
             <label htmlFor="password" className="sr-only">Contraseña</label>
             <input
