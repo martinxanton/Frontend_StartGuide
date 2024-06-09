@@ -1,24 +1,41 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 const RegisterPage = () => {
   const [username, setUsername] = useState("");
-  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
+  const token = localStorage.getItem("token");
+  
+  useEffect(() => {
+    if (token) {
+      navigate("/");
+    }
+  }, [token]);
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    if (!username || !email || !password || !confirmPassword) {
+    if (!username || !password || !confirmPassword) {
       setError("Por favor, completa todos los campos");
     } else if (password !== confirmPassword) {
       setError("Las contraseñas no coinciden");
     } else {
       setError("");
-      // Aquí podrías agregar la lógica para enviar los datos del formulario al servidor
-      navigate("/login");
+      axios
+        .post("http://localhost:3000/api/auth/register", {
+          username: username,
+          password: password,
+        })
+        .then(() => {
+          navigate("/auth/login");
+        })
+        .catch((err) => {
+          setError("Error al registrar usuario");
+          console.error(err);
+        });
     }
   };
 
@@ -36,18 +53,6 @@ const RegisterPage = () => {
               placeholder="Nombre de usuario"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              required
-            />
-          </div>
-          <div>
-            <label htmlFor="email" className="sr-only">Correo electrónico</label>
-            <input
-              type="email"
-              className="input input-bordered w-full"
-              id="email"
-              placeholder="Correo electrónico"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
               required
             />
           </div>

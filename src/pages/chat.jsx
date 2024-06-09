@@ -1,39 +1,71 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
-import ModalForm from "../components/ModalForm";
-import ModalSetting from "../components/ModalSetting";
-import ModalProfile from "../components/ModalProfile";
-import ModalAuth from "../components/ModalAuth";
+import { ModalSetting, ModalProfile, ModalAuth, ModalForms } from '../components';
+import { jwtDecode } from "jwt-decode";
 
 function ChatPage() {
-  const [showModal, setShowModal] = useState(false);
+  const [showModalForm, setShowModalForm] = useState(true);
   const [showModalAuth, setShowModalAuth] = useState(false);
   const [messages, setMessages] = useState([]);
   const [currentMessage, setCurrentMessage] = useState("");
   const [activeConversation, setActiveConversation] = useState(null);
+  const [userProfile, setUserProfile] = useState(null);
   const navigate = useNavigate();
+  const token = localStorage.getItem("token");
+ 
+  useEffect(() => {
+    if (!token) {
+      setShowModalAuth(true);
+    } else {
+      const decodedToken = jwtDecode(token);
+      const userId = decodedToken.user.id;
 
-  const handleCloseModal = () => {
-    setShowModal(false);
-  };
+      const fetchUserProfile = async () => {
+        try {
+          const response = await fetch(`http://localhost:3000/api/user-profile/${userId}`, {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          });
+
+          if (!response.ok) {
+            throw new Error("Failed to fetch user profile");
+          }
+
+          const userProfileData = await response.json();
+          setUserProfile(userProfileData);
+        } catch (error) {
+          console.error("Error fetching user profile:", error);
+        }
+      };
+
+      fetchUserProfile();
+    }
+  }, [token]);
+
   
+  const handleCloseModalForm = () => {
+    setShowModalForm(false);
+  };
 
   const handleSendMessage = async (event) => {
     event.preventDefault(); // Evita que el formulario se envíe y la página se recargue
-    if (currentMessage.trim() === "") return;
+    if (!currentMessage.trim()) return;
 
     const newMessages = [...messages, { user: "user", text: currentMessage }];
     setMessages(newMessages);
     setCurrentMessage("");
     setMessages([...newMessages, { user: "bot", loading: true, text: ""},]);
     try {
-      const response = await fetch("http://localhost:3000/api/chatI", {
+      const response = await fetch("http://localhost:3000/api/chat", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ message: currentMessage }),
+        body: JSON.stringify({ message: currentMessage, userProfile: userProfile, }),
       });
       const data = await response.json();
       setMessages([...newMessages, { user: "bot", text: data.response }]);
@@ -48,34 +80,50 @@ function ChatPage() {
 
   const selectConversation = (index) => {
     setActiveConversation(index);
+    console.log("Conversacion seleccionada:", index);
   };
 
   const conversationList = [
     "Conversacion 1",
     "Conversacion 2",
     "Conversacion 3",
+    "Conversacion 4",
+    "Conversacion 5",
+    "Conversacion 6",
   ];
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    navigate("/auth/login");  // Redirigir a la página de inicio de sesión
+  };
+  
 
   return (
     <div className="flex h-screen w-screen bg-base-200">
-      <div className="p-6 flex w-1/5 flex-col gap-4">
+      <div className="p-5 flex w-1/5 flex-col gap-4">
         <button className="btn btn-secondary rounded-full w-full flex justify-center">
-        <span className="material-symbols-rounded">
-              add
-              </span>
-          Nueva conversación
+          <span className="material-symbols-rounded">
+                add
+          </span>
+          <span className="hidden xl:flex">
+            Nueva conversación
+          </span>
         </button>
-        <h4 className="text-lg font-semibold text-start">
-          Historial de conversaciones
-        </h4>
-        <ul className="menu p-0 h-full">
-          {conversationList.map((conversation, index) => (
-            <li key={index} onClick={() => selectConversation(index)}>
-              <a className={activeConversation === index ? "active" : ""}>
-                {conversation}
-              </a>
-            </li>
-          ))}
+        <ul className="menu bg-base-200 h-full">
+          <li >
+            <h2 className="menu-title px-0">
+              Historial de conversaciones
+            </h2>
+            <ul className="mx-1">
+              {conversationList.map((conversation, index) => (
+                <li key={index} onClick={() => selectConversation(index)}>
+                    <a className={`p-4 ${activeConversation === index ? "active" : ""}`}>
+                      {conversation}
+                    </a>  
+                </li>
+              ))}
+            </ul>
+          </li>
         </ul>
         <div className="flex items-center gap-2">
           <div className="dropdown dropdown-top w-full">
@@ -114,7 +162,7 @@ function ChatPage() {
                 </a>
               </li>
               <li>
-                <a className="py-2 font-medium" onClick={()=> navigate("/auth/login")}>
+                <a className="py-2 font-medium" onClick={handleLogout}>
                 <span className="material-symbols-rounded">
                   logout
                 </span>
@@ -129,7 +177,7 @@ function ChatPage() {
           {messages.map((msg, index) => (
             msg.user === "user" ? (
               <div key={index} className={`flex gap-5 py-2 pr-3 chat-end justify-end`}>
-              <div className={`chat-bubble ${msg.color}`}>
+              <div className={`chat-bubble chat-bubble-secondary`}>
                 <ReactMarkdown>{msg.text}</ReactMarkdown>
               </div>
             </div>
@@ -140,7 +188,7 @@ function ChatPage() {
                     <img alt="Tailwind CSS chat bubble component" src="https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.jpg" />
                   </div>
                 </div>
-                <div className={`chat-bubble ${msg.color}`}>
+                <div className={`chat-bubble`}>
                   {msg.loading ? <span className="loading loading-dots loading-sm"></span> : null}
                   <ReactMarkdown>{msg.text}</ReactMarkdown>
                 </div>
@@ -171,10 +219,10 @@ function ChatPage() {
         </div>
         
       </div>
-      <ModalForm show={showModal} handleClose={handleCloseModal} />
       <ModalProfile/>
       <ModalSetting/>
       <ModalAuth show={showModalAuth}/>
+      <ModalForms show={showModalForm} handleClose={handleCloseModalForm}/>
     </div>
   );
 }

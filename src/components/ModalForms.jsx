@@ -1,9 +1,9 @@
-import React, { useState } from "react";
-import axios from "axios";
+import React, { useEffect, useState } from "react";
+import { Stepper, StepOne, StepTwo, StepThree, StepFour, StepFive } from "./modalFormsComponents";
 
-function ModalForm({ show, handleClose }) {
+const ModalForms = ({ show, handleClose }) => {
+  /*
   const [formData, setFormData] = useState({
-    userName: "",
     startupName: "",
     description: "",
     industry: "",
@@ -16,7 +16,39 @@ function ModalForm({ show, handleClose }) {
     strengths: "",
     challenges: "",
   });
+  */
 
+  const [activeStep, setActiveStep] = useState(0);
+
+  const nextStep = () => {
+    setActiveStep((prevStep) => prevStep + 1);
+  };
+
+  const prevStep = () => {
+    setActiveStep((prevStep) => prevStep - 1);
+  };
+
+  useEffect(() => {
+
+    const prevButton = document.getElementById("prevButton");
+    const nextButton = document.getElementById("nextButton");
+    if (activeStep === 0) {
+      prevButton.classList.add("invisible");
+      prevButton.classList.remove("visible");
+    }
+    else {
+      prevButton.classList.add("visible");
+      prevButton.classList.remove("invisible");
+    }
+  }, [activeStep]);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    console.log("Formulario enviado");
+    handleClose();
+  }
+
+  /*
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
@@ -30,7 +62,6 @@ function ModalForm({ show, handleClose }) {
         // Manejo de respuesta exitosa
         console.log(response.data);
         setFormData({
-          userName: "",
           startupName: "",
           description: "",
           industry: "",
@@ -43,57 +74,57 @@ function ModalForm({ show, handleClose }) {
           strengths: "",
           challenges: "",
         });
-        handleClose(); // Cierra el modal después de enviar el formulario
       })
       .catch((error) => {
         // Manejo de errores
         console.error(error);
       });
+  
   };
-
+  */
   if (!show) return null;
-
   return (
-    <div  className="fixed inset-0 flex items-center justify-center z-50">
-      <div className="bg-base-100 rounded-lg shadow-lg overflow-hidden w-full max-w-4xl p-8">
-        <div className="pb-5 flex justify-between items-center">
-          <h2 className="text-xl font-semibold">
-            Configuración y Personalización de Perfil
-          </h2>
-          <button onClick={handleClose} className="btn btn-circle">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-6 w-6"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
-          </button>
+    <div>
+      <input
+        type="checkbox"
+        checked
+        readOnly
+        id="my_modal_7"
+        className="modal-toggle"
+      />
+      <div className="modal" role="dialog">
+        <div className="modal-box w-3/5 h-5/6 max-w-full p-0 flex gap-7">
+          <div className="w-1/3 flex items-center justify-center p-5">
+            <Stepper index={activeStep}/>
+          </div>
+          <div className="w-2/3 flex flex-col justify-between bg-base-300 px-12 py-10">
+            {activeStep === 0 ? (<StepOne />) : activeStep === 1 ? (<StepTwo />) : activeStep === 2 ? (<StepThree />) : activeStep === 3 ? (<StepFour />) : activeStep === 4 ? (<StepFive />) : null}
+            <div id="sec-buttons" className="flex justify-between pt-4">
+              <button id="prevButton" className="btn btn-secondary btn-circle invisible" onClick={prevStep}>
+                <span className="material-symbols-rounded">chevron_left</span>
+              </button>
+              <button id="nextButton" className={`btn btn-secondary ${activeStep === 4 ? "rounded-full" : "btn-circle"}`} onClick={activeStep === 4 ? handleSubmit : nextStep } >
+                {activeStep === 4 ? (<span>Finalizar</span>) : (<span className="material-symbols-rounded">chevron_right</span>)}
+              </button>
+            </div>
+          </div>
         </div>
-        <div>
+      </div>
+    </div>
+  );
+};
+
+/*<input type="checkbox" checked readOnly id="my_modal_7" className="modal-toggle" />
+      <div className="modal" role="dialog">
+        <div className="modal-box w-2/3 max-w-full">
+          <h2 className="text-2xl font-semibold pb-5">
+            Hablemos de tu Startup
+          </h2>
           <form
             onSubmit={handleSubmit}
-            className="grid grid-cols-1 md:grid-cols-2 gap-4"
+            className="grid grid-cols-1 md:grid-cols-3 gap-4" 
           >
-            <div>
-              <input
-                type="text"
-                className="input input-bordered w-full"
-                id="userName"
-                name="userName"
-                value={formData.userName}
-                onChange={handleChange}
-                placeholder="Nombre del Usuario"
-              />
-            </div>
-            <div>
+            <div  className="col-start-1 col-end-2">
               <input
                 type="text"
                 className="input input-bordered w-full"
@@ -106,7 +137,7 @@ function ModalForm({ show, handleClose }) {
             </div>
             <div>
               <textarea
-                className="textarea textarea-bordered w-full"
+                className="textarea textarea-bordered w-full resize-none"
                 id="description"
                 name="description"
                 value={formData.description}
@@ -116,7 +147,7 @@ function ModalForm({ show, handleClose }) {
             </div>
             <div>
               <textarea
-                className="textarea textarea-bordered w-full"
+                className="textarea textarea-bordered w-full resize-none"
                 id="mainGoals"
                 name="mainGoals"
                 value={formData.mainGoals}
@@ -161,7 +192,6 @@ function ModalForm({ show, handleClose }) {
                 </option>
                 <option value="Crecimiento Inicial">Crecimiento Inicial</option>
                 <option value="Escalamiento">Escalamiento</option>
-                <option value="Consolidación">Consolidación</option>
               </select>
             </div>
             <div>
@@ -193,7 +223,7 @@ function ModalForm({ show, handleClose }) {
             </div>
             <div>
               <textarea
-                className="textarea textarea-bordered w-full"
+                className="textarea textarea-bordered w-full resize-none"
                 id="neededResources"
                 name="neededResources"
                 value={formData.neededResources}
@@ -203,7 +233,7 @@ function ModalForm({ show, handleClose }) {
             </div>
             <div>
               <textarea
-                className="textarea textarea-bordered w-full"
+                className="textarea textarea-bordered w-full resize-none"
                 id="mainCompetitors"
                 name="mainCompetitors"
                 value={formData.mainCompetitors}
@@ -213,7 +243,7 @@ function ModalForm({ show, handleClose }) {
             </div>
             <div>
               <textarea
-                className="textarea textarea-bordered w-full"
+                className="textarea textarea-bordered w-full resize-none"
                 id="strengths"
                 name="strengths"
                 value={formData.strengths}
@@ -223,7 +253,7 @@ function ModalForm({ show, handleClose }) {
             </div>
             <div>
               <textarea
-                className="textarea textarea-bordered w-full"
+                className="textarea textarea-bordered w-full resize-none"
                 id="challenges"
                 name="challenges"
                 value={formData.challenges}
@@ -231,14 +261,9 @@ function ModalForm({ show, handleClose }) {
                 placeholder="Desafíos Actuales"
               ></textarea>
             </div>
-            <button onClick={handleSubmit} className="btn btn-primary col-span-2">
-              Guardar Perfil
-            </button>
           </form>
         </div>
-      </div>
-    </div>
-  );
-}
+        
+      </div> */
 
-export default ModalForm;
+export default ModalForms;

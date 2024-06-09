@@ -1,11 +1,20 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import { jwtDecode } from "jwt-decode";
 
 const LoginPage = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
+  const token = localStorage.getItem("token");
+  
+  useEffect(() => {
+    if (token) {
+      navigate("/");
+    }
+  }, [token]);
 
   const handleSubmit = (event) => {
     event.preventDefault();
@@ -13,7 +22,24 @@ const LoginPage = () => {
       setError("Por favor, ingresa el nombre de usuario y la contraseña");
     } else {
       setError("");
-      navigate("/");
+      axios
+        .post("http://localhost:3000/api/auth/login", {
+          username,
+          password,
+        })
+        .then(
+          (response) => {
+            const { token } = response.data;
+            localStorage.setItem("token", token);
+            navigate("/");}
+        ).catch((err) => {
+          if (err.response && err.response.data && err.response.data.msg) {
+            setError(err.response.data.msg); // Mostrar el mensaje de error del backend
+          } else {
+            setError("Error al iniciar sesión");
+          }
+          console.error(err);
+        });
     }
   };
 
@@ -23,15 +49,14 @@ const LoginPage = () => {
         <form onSubmit={handleSubmit} className="space-y-6">
           <h1 className="text-2xl font-semibold text-center">Iniciar Sesión</h1>
           <div>
-            <label htmlFor="floatingInput" className="sr-only">Correo electrónico</label>
+            <label htmlFor="floatingInput" className="sr-only">Usuario</label>
             <input
               type="text"
               className="input input-bordered w-full"
               id="floatingInput"
-              placeholder="Correo electrónico"
+              placeholder="Usuario"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              required
             />
           </div>
           
@@ -44,7 +69,6 @@ const LoginPage = () => {
               placeholder="Contraseña"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              required
             />
           </div>
 
