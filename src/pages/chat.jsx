@@ -1,125 +1,185 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import ReactMarkdown from "react-markdown";
-import { ModalSetting, ModalProfile, ModalAuth, ModalForms } from '../components';
+import {
+  ModalSetting,
+  ModalProfile,
+  ModalAuth,
+  ModalForms,
+  ChatNew,
+  ChatHistory,
+} from "../components";
+import { jwtDecode } from "jwt-decode";
+import { v4 as uuidv4 } from "uuid";
 
-
-function ChatPage() {
-  const [showModalForm, setShowModalForm] = useState(true);
+function ChatPage({ modeChat }) {
+  const [showModalForm, setShowModalForm] = useState(false);
   const [showModalAuth, setShowModalAuth] = useState(false);
   const [messages, setMessages] = useState([]);
   const [currentMessage, setCurrentMessage] = useState("");
   const [activeConversation, setActiveConversation] = useState(null);
   const [userProfile, setUserProfile] = useState(null);
+  const [chatMode, setChatMode] = useState(1);
+  const [userId, setUserId] = useState(null);
+  const [loading, setLoading] = useState(true); // Estado de carga
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
 
   useEffect(() => {
-    if (!token) {
-      setShowModalAuth(true);
-      setShowModalForm(false);
-    } else {
-      // Verificar el token
-      const verifyToken = async () => {
-        try {
-          const response = await fetch("http://localhost:3000/api/profile/protected", {
-            method: "GET",
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
-          });
+    setChatMode(modeChat);
+  }, [modeChat]);
 
-          if (!response.ok) {
-            throw new Error("Failed to verify token");
-          }
-          return true;
-
-        } catch (error) {
-          console.error("Error verifying token:", error);
-        }
+  useEffect(() => {
+    const initializeChat = async () => {
+      if (!token) {
+        setShowModalForm(false);
+        setShowModalAuth(true);
+        console.log("No hay token");
+        setLoading(false); // Finaliza la carga
+        return;
       }
-      // Obtener el perfil del usuario
-      const fetchUserProfile = async () => {
-        try {
-          const response = await fetch(`http://localhost:3000/api/profile`, {
-            method: "GET",
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
-          });
 
-          if (!response.ok) {
-            throw new Error("Failed to fetch user profile");
-          }
-
-          const userProfileData = await response.json();
-          setUserProfile(userProfileData);
-        } catch (error) {
-          console.error("Error fetching user profile:", error);
+      try {
+        const isValidToken = await verifyToken();
+        if (!isValidToken) {
+          console.log("Token no verificado");
+          localStorage.removeItem("token");
+          setLoading(false);
+          return;
         }
-      };
-      // Verificar si el usuario tiene información en su perfil
-      const verifyInfoUserProfile = async () => {
-        try {
-          const response = await fetch(`http://localhost:3000/api/profile/exists`, {
-            method: "GET",
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
-          });
-
-          if (!response.ok) {
-            throw new Error("Failed to verify user profile");
-          }
-          return await response.json();
-        } catch (error) {
-          console.error("Error fetching user profile:", error);
-        }
-      }
-      console.log("Token:", token);
-
-      if (!verifyToken()) {
-        localStorage.removeItem("token");
-        console.log("Token no verificado");
-      } else {
         console.log("Token verificado");
-        if (verifyInfoUserProfile()) {
+        const decodedToken = jwtDecode(token);
+        setUserId(decodedToken.user.id);
+
+        const hasUserProfile = await verifyInfoUserProfile();
+        console.log("Has user profile:", hasUserProfile);
+        if (!hasUserProfile) {
           console.log("No hay información en el perfil");
           setShowModalForm(true);
         } else {
           console.log("Hay información en el perfil");
           setShowModalForm(false);
-          fetchUserProfile();
+          await fetchUserProfile();
         }
+      } catch (error) {
+        console.error("Error:", error);
+      } finally {
+        setLoading(false); // Finaliza la carga
       }
-      
-    }
+    };
+
+    initializeChat();
   }, [token]);
 
-  
+  // Update userProfile and userID
+  useEffect(() => {
+    console.log("User profile:", userProfile);
+    console.log("User ID:", userId);
+  }, [userProfile, userId]);
+
+  const verifyToken = async () => {
+    try {
+      const response = await fetch(
+        "http://localhost:3000/api/profile/verify-token",
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to verify token");
+      }
+
+      const data = await response.json();
+      console.log("Token Validity:", data.valid);
+      return data.valid;
+    } catch (error) {
+      console.error("Error verifying token:", error);
+      return false;
+    }
+  };
+
+  const fetchUserProfile = async () => {
+    try {
+      const response = await fetch(`http://localhost:3000/api/profile`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch user profile");
+      }
+
+      const userProfileData = await response.json();
+      console.log("Fetched user profile data:", userProfileData);
+      setUserProfile(userProfileData);
+    } catch (error) {
+      console.error("Error fetching user profile:", error);
+    }
+  };
+
+  const verifyInfoUserProfile = async () => {
+    try {
+      const response = await fetch(`http://localhost:3000/api/profile/exists`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to verify user profile");
+      }
+
+      const data = await response.json();
+      console.log("Data:", data.valid);
+      return data.valid;
+    } catch (error) {
+      console.error("Error fetching user profile:", error);
+    }
+  };
+
   const handleCloseModalForm = () => {
     setShowModalForm(false);
   };
 
+  const handleSetCurrentMessage = (message) => {
+    setCurrentMessage(message);
+  };
+
   const handleSendMessage = async (event) => {
-    event.preventDefault(); // Evita que el formulario se envíe y la página se recargue
+    event.preventDefault();
     if (!currentMessage.trim()) return;
 
     const newMessages = [...messages, { user: "user", text: currentMessage }];
     setMessages(newMessages);
     setCurrentMessage("");
-    setMessages([...newMessages, { user: "bot", loading: true, text: ""},]);
+    setMessages([...newMessages, { user: "bot", loading: true, text: "" }]);
+    // Generate a UUID and update the URL
+    const newUUID = uuidv4();
+    console.log("New UUID:", newUUID);
+    navigate(`/${newUUID}`);
     try {
       const response = await fetch("http://localhost:3000/api/chat", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ message: currentMessage, userProfile: userProfile, }),
+        body: JSON.stringify({
+          message: currentMessage,
+          userProfile: userProfile,
+          userId: userId,
+        }),
       });
+
+      console.log("enviado:", currentMessage, userProfile, userId);
       const data = await response.json();
       setMessages([...newMessages, { user: "bot", text: data.response }]);
     } catch (error) {
@@ -136,43 +196,50 @@ function ChatPage() {
     console.log("Conversacion seleccionada:", index);
   };
 
-  const conversationList = [
-    "Conversacion 1",
-    "Conversacion 2",
-    "Conversacion 3",
-    "Conversacion 4",
-    "Conversacion 5",
-    "Conversacion 6",
-  ];
+  const conversationList = [];
 
   const handleLogout = () => {
     localStorage.removeItem("token");
-    navigate("/auth/login");  // Redirigir a la página de inicio de sesión
+    navigate("/auth/login");
   };
-  
+
+  if (loading) {
+    return (
+      <div className="flex h-screen w-screen bg-base-200 justify-center items-center">
+        <span className="loading loading-spinner loading-lg"></span>
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-screen w-screen bg-base-200">
-      <div className="p-5 flex w-1/5 flex-col gap-4">
-        <button className="btn btn-secondary rounded-full w-full flex justify-center">
-          <span className="material-symbols-rounded">
-                add
-          </span>
-          <span className="hidden xl:flex">
-            Nueva conversación
-          </span>
+      <div
+        className={`p-5 flex w-1/5 flex-col gap-4 ${
+          token === null ? "blur-sm" : ""
+        }`}
+      >
+        <button
+          className={`btn btn-secondary rounded-full ${
+            chatMode === 1 ? "btn-disabled" : ""
+          } w-full flex justify-center`}
+          onClick={() => navigate("/")}
+        >
+          <span className="material-symbols-rounded">add</span>
+          <span className="hidden xl:flex">Nueva conversación</span>
         </button>
         <ul className="menu bg-base-200 h-full">
-          <li >
-            <h2 className="menu-title px-0">
-              Historial de conversaciones
-            </h2>
+          <li>
+            <h2 className="menu-title px-0">Historial de conversaciones</h2>
             <ul className="mx-1">
               {conversationList.map((conversation, index) => (
                 <li key={index} onClick={() => selectConversation(index)}>
-                    <a className={`p-4 ${activeConversation === index ? "active" : ""}`}>
-                      {conversation}
-                    </a>  
+                  <a
+                    className={`p-4 ${
+                      activeConversation === index ? "active" : ""
+                    }`}
+                  >
+                    {conversation}
+                  </a>
                 </li>
               ))}
             </ul>
@@ -187,68 +254,72 @@ function ChatPage() {
             >
               <div className="w-10 rounded-full">
                 <img
-                className="rounded-full"
+                  className="rounded-full"
                   alt="Tailwind CSS Navbar component"
                   src="https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.jpg"
                 />
               </div>
-              <h2 className="font-bold">Usuario</h2>
+              <h2 className="font-bold">
+                {token !== null ? (
+                  userProfile !== null ? (
+                    <p>{userProfile.startupName}</p>
+                  ) : (
+                    <p>Usuario</p>
+                  )
+                ) : (
+                  <p>Usuario</p>
+                )}
+              </h2>
             </div>
             <ul
               tabIndex={0}
               className="mt-3 z-[1] p-2 shadow menu menu-sm dropdown-content bg-base-100 rounded-box w-52"
             >
               <li>
-                <a className="py-2 font-medium" onClick={()=>document.getElementById('modal_profile').showModal()}>
-                <span className="material-symbols-rounded">
-                  person
-                </span>
+                <a
+                  className="py-2 font-medium"
+                  onClick={() =>
+                    document.getElementById("modal_profile").showModal()
+                  }
+                >
+                  <span className="material-symbols-rounded">person</span>
                   Perfil
                 </a>
               </li>
               <li>
-                <a className="py-2 font-medium" onClick={()=>document.getElementById('modal_settings').showModal()}>
-                <span className="material-symbols-rounded">
-                  settings
-                </span>
+                <a
+                  className="py-2 font-medium"
+                  onClick={() =>
+                    document.getElementById("modal_settings").showModal()
+                  }
+                >
+                  <span className="material-symbols-rounded">settings</span>
                   Ajustes
                 </a>
               </li>
               <li>
                 <a className="py-2 font-medium" onClick={handleLogout}>
-                <span className="material-symbols-rounded">
-                  logout
-                </span>
-                  Cerrar sesion</a>
+                  <span className="material-symbols-rounded">logout</span>
+                  Cerrar sesion
+                </a>
               </li>
             </ul>
           </div>
         </div>
       </div>
-      <div className="bg-base-300 rounded-box w-4/5 flex flex-col h-full p-4">
-        <div className="flex-grow overflow-auto p-4 mb-4">
-          {messages.map((msg, index) => (
-            msg.user === "user" ? (
-              <div key={index} className={`flex gap-5 py-2 pr-3 chat-end justify-end`}>
-              <div className={`chat-bubble chat-bubble-secondary`}>
-                <ReactMarkdown>{msg.text}</ReactMarkdown>
-              </div>
-            </div>
-            ) : msg.user === "bot" ? (
-              <div key={index} className={`flex gap-5 py-2 pr-3 chat-start justify-start`}>
-                <div className="chat-image avatar">
-                  <div className="w-10 rounded-full">
-                    <img alt="Tailwind CSS chat bubble component" src="https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.jpg" />
-                  </div>
-                </div>
-                <div className={`chat-bubble`}>
-                  {msg.loading ? <span className="loading loading-dots loading-sm"></span> : null}
-                  <ReactMarkdown>{msg.text}</ReactMarkdown>
-                </div>
-              </div>
-            ) : null
-          ))}
-        </div>
+      <div
+        className={`bg-base-300 rounded-box w-4/5 flex flex-col h-full p-4 ${
+          token === null ? "blur-sm" : ""
+        }`}
+      >
+        {chatMode === 1 ? (
+          <ChatNew
+            handleSetCurrentMessage={handleSetCurrentMessage}
+            token={token}
+          />
+        ) : (
+          <ChatHistory messages={messages} />
+        )}
         <div className="flex justify-center">
           <form onSubmit={handleSendMessage} className="flex gap-2 w-3/5">
             <input
@@ -263,19 +334,19 @@ function ChatPage() {
               id="sendButton"
               className="btn btn-secondary btn-circle flex items-center justify-center"
               type="submit"
+              onClick={() => setChatMode(2)}
             >
               <span className="material-symbols-rounded">
-              prompt_suggestion
+                prompt_suggestion
               </span>
             </button>
           </form>
         </div>
-        
       </div>
-      <ModalProfile/>
-      <ModalSetting/>
-      <ModalAuth show={showModalAuth}/>
-      <ModalForms show={showModalForm} handleClose={handleCloseModalForm}/>
+      <ModalProfile />
+      <ModalSetting />
+      <ModalAuth show={showModalAuth} />
+      <ModalForms show={showModalForm} handleClose={handleCloseModalForm} />
     </div>
   );
 }
