@@ -2,7 +2,7 @@
 
 ## Descripción
 
-Este es el frontend de un chatbot diseñado para ayudar a startups en su desarrollo inicial. El chatbot proporciona asistencia específica y personalizada a través de perfiles adaptados a diferentes temas y necesidades comunes en las etapas tempranas de una startup.
+Este es el frontend de un chatbot diseñado para ayudar a startups en su desarrollo inicial. El chatbot proporciona asistencia específica y personalizada a través de perfiles adaptados a diferentes temas y necesidades comunes en las etapas tempranas de una startup, todo esto potenciado por la API de GEMINI que fue trabajado en un backend propio desarrollado en NodeJS.
 
 ## Características
 
