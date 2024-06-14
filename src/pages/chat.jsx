@@ -176,6 +176,7 @@ function ChatPage({ modeChat }) {
           message: currentMessage,
           userProfile: userProfile,
           userId: userId,
+          uuid: newUUID, // Sending UUID to the backend
         }),
       });
 
@@ -199,8 +200,7 @@ function ChatPage({ modeChat }) {
   const conversationList = [];
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    navigate("/auth/login");
+    navigate("/logout");
   };
 
   if (loading) {
@@ -212,7 +212,11 @@ function ChatPage({ modeChat }) {
   }
 
   return (
-    <div className="flex h-screen w-screen bg-base-200">
+    <div
+      className="flex h-screen w-screen bg-base-200"
+      id="theme-id"
+      data-theme="night"
+    >
       <div
         className={`p-5 flex w-1/5 flex-col gap-4 ${
           token === null ? "blur-sm" : ""

@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 const Logout = () => {
   const navigate = useNavigate();
 
+
   useEffect(() => {
     // Elimina el token del localStorage
     localStorage.removeItem('token');
