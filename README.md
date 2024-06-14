@@ -20,6 +20,7 @@ Este es el frontend de un chatbot diseñado para ayudar a startups en su desarro
 ## Capturas de la App
 
 ![Login](screenshots/captura_1.jpeg)
+![Registro](screenshots/captura_9.jpeg)
 ![Formulario](screenshots/captura_2.jpeg)
 ![Formulario](screenshots/captura_3.jpeg)
 ![Formulario](screenshots/captura_4.jpeg)
