@@ -1,8 +1,29 @@
-# React + Vite
+# Chatbot Startup Assistant
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## Descripción
 
-Currently, two official plugins are available:
+Este es el frontend de un chatbot diseñado para ayudar a startups en su desarrollo inicial. El chatbot proporciona asistencia específica y personalizada a través de perfiles adaptados a diferentes temas y necesidades comunes en las etapas tempranas de una startup.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Características
+
+- **Asistencia personalizada**: El chatbot ofrece respuestas y consejos adaptados a las necesidades específicas de cada startup.
+- **Perfiles temáticos**: Incluye perfiles para áreas como marketing, financiamiento, desarrollo de producto y más.
+- **Interfaz amigable**: Un diseño intuitivo y fácil de usar para asegurar una buena experiencia de usuario.
+
+## Tecnologías Utilizadas
+
+- **React**: Para la construcción de la interfaz de usuario.
+- **TailwindCSS**: Para el diseño de estilos.
+- **DaisyUI**: Para la libreria de componentes.
+- **Axios**: Para la comunicación con la API del backend.
+
+## Capturas de la App
+
+![Login](screenshots/captura_1.jpeg)
+![Formulario](screenshots/captura_2.jpeg)
+![Formulario](screenshots/captura_3.jpeg)
+![Formulario](screenshots/captura_4.jpeg)
+![Formulario](screenshots/captura_5.jpeg)
+![Formulario](screenshots/captura_6.jpeg)
+![Perfiles](screenshots/captura_7.jpeg)
+![Chat](screenshots/captura_8.jpeg)
