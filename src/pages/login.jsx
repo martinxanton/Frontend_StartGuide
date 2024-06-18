@@ -30,7 +30,6 @@ const LoginPage = () => {
         .then((response) => {
           const { token } = response.data;
           const decodedToken = jwtDecode(token);
-          const userId = decodedToken.user.id;
           localStorage.setItem("token", token);
           navigate("/");
         })

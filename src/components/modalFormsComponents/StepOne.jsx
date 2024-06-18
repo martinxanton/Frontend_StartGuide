@@ -79,7 +79,7 @@ const StepOne = ({ values, handleInputChange }) => {
               Selecciona la Industria
             </option>
             {industryList.map((industry, index) => (
-              <option key={index} value={index}>
+              <option key={index} value={industry}>
                 {industry}
               </option>
             ))}
@@ -104,7 +104,7 @@ const StepOne = ({ values, handleInputChange }) => {
               Selecciona la Etapa de Desarrollo
             </option>
             {developmentStageList.map((developmentStage, index) => (
-              <option key={index} value={index}>
+              <option key={index} value={developmentStage}>
                 {developmentStage}
               </option>
             ))}

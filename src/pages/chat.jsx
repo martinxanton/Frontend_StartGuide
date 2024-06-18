@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+
+import { useParams,useNavigate } from "react-router-dom";
 import {
   ModalSetting,
   ModalProfile,
@@ -20,9 +21,14 @@ function ChatPage({ modeChat }) {
   const [userProfile, setUserProfile] = useState(null);
   const [chatMode, setChatMode] = useState(1);
   const [userId, setUserId] = useState(null);
+  const [botId, setBotId] = useState(1); // [1, 2, 3, 4
+  const [conversations, setConversations] = useState([]);
   const [loading, setLoading] = useState(true); // Estado de carga
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
+  const { uuid } = useParams();
+
+  console.log("UUID:", uuid);
 
   useEffect(() => {
     setChatMode(modeChat);
@@ -59,6 +65,7 @@ function ChatPage({ modeChat }) {
           console.log("Hay información en el perfil");
           setShowModalForm(false);
           await fetchUserProfile();
+          await fetchConversations();
         }
       } catch (error) {
         console.error("Error:", error);
@@ -146,6 +153,30 @@ function ChatPage({ modeChat }) {
     }
   };
 
+  // Fetch conversations
+  const fetchConversations = async () => {
+    try {
+      const response = await fetch(`http://localhost:3000/api/chat/conversations`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+      console.log("Token:", token);
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch conversations");
+      }
+
+      const data = await response.json();
+      console.log("Fetched conversations:", data.conversations);
+      setConversations(data.conversations);
+    } catch (error) {
+      console.error("Error fetching conversations:", error);
+    }
+  };
+
   const handleCloseModalForm = () => {
     setShowModalForm(false);
   };
@@ -170,13 +201,15 @@ function ChatPage({ modeChat }) {
       const response = await fetch("http://localhost:3000/api/chat", {
         method: "POST",
         headers: {
+          Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
           message: currentMessage,
           userProfile: userProfile,
           userId: userId,
-          uuid: newUUID, // Sending UUID to the backend
+          uuid: "7497d6ea-af6c-4eb1-9539-1a9f7c5346f6",
+          botId: botId,
         }),
       });
 
@@ -196,8 +229,15 @@ function ChatPage({ modeChat }) {
     setActiveConversation(index);
     console.log("Conversacion seleccionada:", index);
   };
+  
 
-  const conversationList = [];
+  const conversationList = conversations.map((conversation, index) => (
+    <li key={index} onClick={() => selectConversation(conversation.uuid)}>
+      <a className={`p-4 ${activeConversation === conversation.uuid ? "active" : ""}`}>
+        {conversation.title}
+      </a>
+    </li>
+  ));
 
   const handleLogout = () => {
     navigate("/logout");
@@ -235,17 +275,7 @@ function ChatPage({ modeChat }) {
           <li>
             <h2 className="menu-title px-0">Historial de conversaciones</h2>
             <ul className="mx-1">
-              {conversationList.map((conversation, index) => (
-                <li key={index} onClick={() => selectConversation(index)}>
-                  <a
-                    className={`p-4 ${
-                      activeConversation === index ? "active" : ""
-                    }`}
-                  >
-                    {conversation}
-                  </a>
-                </li>
-              ))}
+              {conversationList}
             </ul>
           </li>
         </ul>

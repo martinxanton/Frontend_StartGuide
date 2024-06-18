@@ -100,10 +100,7 @@ const ChatNew = ({ handleSetCurrentMessage, token }) => {
 
   useEffect(() => {
     const div = document.getElementById("theme-id");
-    //document.documentElement.setAttribute("data-theme", theme);
     div.setAttribute("data-theme", theme);
-    // Guarda el tema seleccionado en el localStorage
-    // asignar el valor de la variable theme a un div que tiene el data-theme
   }, [theme]);
 
   return (
@@ -114,7 +111,7 @@ const ChatNew = ({ handleSetCurrentMessage, token }) => {
           Para comenzar, selecciona el asesor que mejor se adapte a tus necesidades:
         </p>
       </div>
-      <div className="grid grid-cols-5 gap-5">
+      <div className="grid xl:grid-cols-5 lg:grid-cols-3 sm:grid-cols-2 gap-5">
         {personality.map((person, index) => (
           <div key={index} className="lg:tooltip" data-tip={person.description}>
               <div
