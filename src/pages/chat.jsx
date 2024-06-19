@@ -11,6 +11,7 @@ import {
 } from "../components";
 import { jwtDecode } from "jwt-decode";
 import { v4 as uuidv4 } from "uuid";
+import { set } from "firebase/database";
 
 function ChatPage({ modeChat }) {
   const [showModalForm, setShowModalForm] = useState(false);
@@ -21,12 +22,19 @@ function ChatPage({ modeChat }) {
   const [userProfile, setUserProfile] = useState(null);
   const [chatMode, setChatMode] = useState(1);
   const [userId, setUserId] = useState(null);
-  const [botId, setBotId] = useState(1); // [1, 2, 3, 4
+  const [botId, setBotId] = useState(1); // [1, 2, 3, 4]
   const [conversations, setConversations] = useState([]); // Lista de conversaciones
   const [loading, setLoading] = useState(true); // Estado de carga
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
   const { uuid } = useParams();
+
+
+  useEffect(() => {
+    if (modeChat === 1) {
+      setMessages([]);
+    }
+  }, [modeChat]);
 
   useEffect(() => {
     setChatMode(modeChat);
@@ -37,29 +45,29 @@ function ChatPage({ modeChat }) {
       if (!token) {
         setShowModalForm(false);
         setShowModalAuth(true);
-        console.log("No hay token");
+        //console.log("No hay token");
         setLoading(false); // Finaliza la carga
         return;
       }
-      console.log("Token:", token);
+      //console.log("Token:", token);
       try {
         const isValidToken = await verifyToken();
         if (!isValidToken) {
-          console.log("Token no verificado");
+          //console.log("Token no verificado");
           localStorage.removeItem("token");
           setLoading(false);
           return;
         }
-        console.log("Token verificado");
+        //console.log("Token verificado");
         const decodedToken = jwtDecode(token);
         setUserId(decodedToken.user.id);
 
         const hasUserProfile = await verifyInfoUserProfile();
         if (!hasUserProfile) {
-          console.log("No hay información en el perfil");
+          //console.log("No hay información en el perfil");
           setShowModalForm(true);
         } else {
-          console.log("Hay información en el perfil");
+          //console.log("Hay información en el perfil");
           setShowModalForm(false);
           await fetchUserProfile();
           await fetchConversations();
@@ -81,10 +89,7 @@ function ChatPage({ modeChat }) {
   // Update userProfile and userID
   useEffect(() => {
     if (!userProfile) return;
-    console.log("User profile:", userProfile);
-    console.log("User ID:", userId);
-    console.log("Messages:", messages);
-  }, [userProfile, userId, messages]);
+  }, [userProfile, userId]);
 
   const verifyToken = async () => {
     try {
@@ -104,10 +109,10 @@ function ChatPage({ modeChat }) {
       }
 
       const data = await response.json();
-      console.log("Token Validity:", data.valid);
+      //console.log("Token Validity:", data.valid);
       return data.valid;
     } catch (error) {
-      console.error("Error verifying token:", error);
+      //console.error("Error verifying token:", error);
       return false;
     }
   };
@@ -127,10 +132,10 @@ function ChatPage({ modeChat }) {
       }
 
       const userProfileData = await response.json();
-      console.log("Fetched user profile data:", userProfileData);
+      //console.log("Fetched user profile data:", userProfileData);
       setUserProfile(userProfileData);
     } catch (error) {
-      console.error("Error fetching user profile:", error);
+      //console.error("Error fetching user profile:", error);
     }
   };
 
@@ -183,6 +188,10 @@ function ChatPage({ modeChat }) {
     setShowModalForm(false);
   };
 
+  const handleBotId = (id) => {
+    setBotId(id);
+  };
+
   const handleSetCurrentMessage = (message) => {
     setCurrentMessage(message);
   };
@@ -190,23 +199,24 @@ function ChatPage({ modeChat }) {
   const handleSendMessage = async (event) => {
     event.preventDefault();
     if (!currentMessage.trim()) return;
-
+    setMessages([])
+    console.log("messages:", messages)
     const newMessages = [...messages, { role: "user", parts: [{text: currentMessage }] }];
     setMessages(newMessages);
     setCurrentMessage("");
     setMessages([...newMessages, { role: "bot", loading: true, parts: [{text: ""}]} ]);
     
-    if (!activeConversation) {
-      console.error("No active conversation");
-      return;
-    }
-
     let newUUID = "";
-    if (activeConversation === null) {
+    if (!uuid) {
+      console.log("No hay UUID");
       newUUID = uuidv4();
+      console.log("Nuevo UUID:", newUUID);
     } else {
-      newUUID = activeConversation;
+      newUUID = uuid;
+      console.log("UUID existente:", newUUID);
     }
+    
+
     navigate(`/${newUUID}`);
     try {
       const response = await fetch("http://localhost:3000/api/chat", {
@@ -234,10 +244,13 @@ function ChatPage({ modeChat }) {
         { role: "bot", parts: [{ text: "Error al obtener la respuesta del bot" }]},
       ]);
     }
+
+
   };
 
   const selectConversation = async (uuid) => {
     setActiveConversation(uuid);
+    setMessages([]);
     console.log("Conversacion seleccionada:", uuid);
     try {
       const response = await fetch(`http://localhost:3000/api/chat/history/${uuid}`, {
@@ -251,7 +264,7 @@ function ChatPage({ modeChat }) {
       if (!response.ok) {
         throw new Error("Failed to fetch conversation history");
       }
-
+      console.log("Trayendo historial de conversación de: ", uuid);
       const data = await response.json();
       console.log("Fetched conversation history:", data.history.slice(2));
       setMessages(data.history.slice(2));  
@@ -261,11 +274,13 @@ function ChatPage({ modeChat }) {
     }
   };
 
-  
+  useEffect(() => {
+    conversationList;
+  },[conversations]);
 
   const conversationList = conversations.map((conversation, index) => (
     <li key={index} onClick={() => selectConversation(conversation.uuid)}>
-      <a className={`p-4 ${activeConversation === conversation.uuid ? "active" : ""}`}>
+      <a className={`p-4 text-wrap   ${activeConversation === conversation.uuid ? "active" : ""}`}>
         {conversation.title}
       </a>
     </li>
@@ -303,9 +318,9 @@ function ChatPage({ modeChat }) {
           <span className="material-symbols-rounded">add</span>
           <span className="hidden xl:flex">Nueva conversación</span>
         </button>
-        <ul className="menu bg-base-200 h-full">
+        <ul className="menu bg-base-200 h-full ">
           <li>
-            <h2 className="menu-title px-0">Historial de conversaciones</h2>
+            <h2 className="menu-title px-0 overflow-hidden">Historial de conversaciones</h2>
             <ul className="mx-1">
               {conversationList}
             </ul>
@@ -381,7 +396,7 @@ function ChatPage({ modeChat }) {
         {chatMode === 1 ? (
           <ChatNew
             handleSetCurrentMessage={handleSetCurrentMessage}
-            token={token}
+            handleBotId={handleBotId}
           />
         ) : (
           <ChatHistory messages={messages} />

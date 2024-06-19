@@ -1,8 +1,7 @@
 import React from "react";
 import { useState, useEffect } from "react";
 
-const ChatNew = ({ handleSetCurrentMessage, token }) => {
-
+const ChatNew = ({ handleSetCurrentMessage, handleBotId }) => {
   const personality = [
     {
       name: "Finn",
@@ -76,25 +75,7 @@ const ChatNew = ({ handleSetCurrentMessage, token }) => {
     },
   ];
 
-  const option = [
-    {
-      title:
-        "¿Cuáles son las tendencias emergentes en mi industria y cómo pueden afectar a mi startup?",
-      img: "https://www.cimec.es/wp-content/uploads/2022/04/Tendencias-de-mercado-1.png",
-    },
-    {
-      title: "¿Cuáles son los pasos para validar mi idea de negocio?",
-      img: "https://www.grandespymes.com.ar/wp-content/uploads/2019/11/validar-idea-de-negocio.jpg",
-    },
-    {
-      title: "¿Cómo puedo construir un producto mínimo viable (MVP)?",
-      img: "https://static.mercadonegro.pe/wp-content/uploads/2020/10/09150412/Producto-Minimo-Viable.jpg",
-    },
-    {
-      title: "¿Qué estrategias puedo usar para crecer mi base de clientes?",
-      img: "https://www.grandespymes.com.ar/wp-content/uploads/2020/10/Cuales-pueden-ser-tus-primeros-pasos-para-fortalecer-y-hacer-crecer-tu-cartera-de-clientes.jpg",
-    },
-  ];
+  const [selectedPersonality, setSelectedPersonality] = useState(null);
 
   const [theme, setTheme] = useState("night");
 
@@ -105,61 +86,89 @@ const ChatNew = ({ handleSetCurrentMessage, token }) => {
 
   return (
     <div className="flex-grow flex flex-col pt-10 gap-10 px-24">
-      <div className="flex flex-col gap-1">
-        <h1 className="text-3xl font-bold">¡Hola! Soy tu asistente virtual</h1>
-        <p className="text-base">
-          Para comenzar, selecciona el asesor que mejor se adapte a tus necesidades:
-        </p>
-      </div>
-      <div className="grid xl:grid-cols-5 lg:grid-cols-3 sm:grid-cols-2 gap-5">
-        {personality.map((person, index) => (
-          <div key={index} className="lg:tooltip" data-tip={person.description}>
+      {!selectedPersonality ? (
+        <>
+          <div className="flex flex-col gap-1">
+            <h1 className="text-3xl font-bold">
+              ¡Hola! Soy tu asistente virtual
+            </h1>
+            <p className="text-base">
+              Para comenzar, selecciona el asesor que mejor se adapte a tus
+              necesidades:
+            </p>
+          </div>
+          <div className="grid xl:grid-cols-5 lg:grid-cols-3 sm:grid-cols-2 gap-5">
+            {personality.map((person, index) => (
               <div
-                onClick={() => {
-                  setTheme(person.theme);
-                }}
-                className="group py-8 px-8 flex flex-col drop-shadow-md cursor-pointer bg-base-100 hover:bg-secondary rounded-xl shadow-lg sm:py-4 sm:flex justify-top items-center gap-3 min-h-full"
+                key={index}
+                className="lg:tooltip"
+                data-tip={person.description}
               >
-                <img
-                  className="block mx-auto h-16 sm:mx-0 sm:shrink-0"
-                  src={person.img}
-                  alt="Woman's Face"
-                />
-                <div className="text-center space-y-2 sm:text-center">
-                  <div className="space-y-0.5">
-                    <p className="text-lg text-base-content group-hover:text-white font-semibold">
-                      {person.name}
-                    </p>
-                    <p className="text-slate-500 group-hover:text-white font-normal">
-                      {person.role}
-                    </p>
+                <div
+                  onClick={() => {
+                    //setTheme(person.theme);
+                    setSelectedPersonality(person);
+                    handleBotId(index + 1);
+                    console.log("botId " + (index + 1));
+                  }}
+                  className="group py-8 px-8 flex flex-col drop-shadow-md cursor-pointer bg-base-100 hover:bg-secondary rounded-xl shadow-lg sm:py-4 sm:flex justify-top items-center gap-3 min-h-full"
+                >
+                  <img
+                    className="block mx-auto h-16 sm:mx-0 sm:shrink-0"
+                    src={person.img}
+                    alt={person.name}
+                  />
+                  <div className="text-center space-y-2 sm:text-center">
+                    <div className="space-y-0.5">
+                      <p className="text-lg text-base-content group-hover:text-white font-semibold">
+                        {person.name}
+                      </p>
+                      <p className="text-slate-500 group-hover:text-white font-normal">
+                        {person.role}
+                      </p>
+                    </div>
                   </div>
+                </div>
               </div>
+            ))}
+          </div>
+        </>
+      ) : (
+        <div className="flex flex-col gap-3">
+          <div className="flex gap-4 items-center">
+            <img
+              className="block mx-auto h-16 sm:mx-0 sm:shrink-0"
+              src={selectedPersonality.img}
+            />
+            <div>
+            <h2 className="text-2xl font-bold">
+              {"Hola, me llamo " + selectedPersonality.name}
+            </h2>
+            <p className="text-sm">{"" + selectedPersonality.description}</p>
             </div>
           </div>
-        ))}
-      </div>
+
+          <div className="flex flex-col gap-2 mt-4">
+            {selectedPersonality.questions.map((question, index) => (
+              <button
+                key={index}
+                className="btn btn-secondary py-2 px-4 text-white rounded-md"
+                onClick={() => handleSetCurrentMessage(question)}
+              >
+                {question}
+              </button>
+            ))}
+          </div>
+          <button
+            className="btn mt-4 py-2 px-4 btn-primary text-white rounded-md"
+            onClick={() => setSelectedPersonality(null)}
+          >
+            Volver
+          </button>
+        </div>
+      )}
     </div>
   );
 };
-
-/*<div className="grid xl:grid-cols-4 md:grid-cols-2 gap-3 ">
-        {option.map((opt, index) => (
-          <div
-            key={index}
-            onClick={() => {
-              handleSetCurrentMessage(opt.title);
-            }}
-            className={`hover:border transition ease-in-out delay-150 duration-200 card w-48 bg-base-100 shadow-xl hover:-translate-y-1 cursor-pointer image-full`}
-          >
-            <figure>
-              <img src={opt.img} />
-            </figure>
-            <div className="card-body p-6">
-              <h2 className="card-title text-sm">{opt.title}</h2>
-            </div>
-          </div>
-        ))}
-      </div> */
 
 export default ChatNew;
