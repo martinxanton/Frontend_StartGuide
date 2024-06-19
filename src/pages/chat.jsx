@@ -16,19 +16,17 @@ function ChatPage({ modeChat }) {
   const [showModalForm, setShowModalForm] = useState(false);
   const [showModalAuth, setShowModalAuth] = useState(false);
   const [messages, setMessages] = useState([]);
-  const [currentMessage, setCurrentMessage] = useState("");
-  const [activeConversation, setActiveConversation] = useState(null);
+  const [currentMessage, setCurrentMessage] = useState("");   // Mensaje a enviar
+  const [activeConversation, setActiveConversation] = useState(null); // Indice de la conversación activa
   const [userProfile, setUserProfile] = useState(null);
   const [chatMode, setChatMode] = useState(1);
   const [userId, setUserId] = useState(null);
   const [botId, setBotId] = useState(1); // [1, 2, 3, 4
-  const [conversations, setConversations] = useState([]);
+  const [conversations, setConversations] = useState([]); // Lista de conversaciones
   const [loading, setLoading] = useState(true); // Estado de carga
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
   const { uuid } = useParams();
-
-  console.log("UUID:", uuid);
 
   useEffect(() => {
     setChatMode(modeChat);
@@ -43,7 +41,7 @@ function ChatPage({ modeChat }) {
         setLoading(false); // Finaliza la carga
         return;
       }
-
+      console.log("Token:", token);
       try {
         const isValidToken = await verifyToken();
         if (!isValidToken) {
@@ -57,7 +55,6 @@ function ChatPage({ modeChat }) {
         setUserId(decodedToken.user.id);
 
         const hasUserProfile = await verifyInfoUserProfile();
-        console.log("Has user profile:", hasUserProfile);
         if (!hasUserProfile) {
           console.log("No hay información en el perfil");
           setShowModalForm(true);
@@ -66,6 +63,10 @@ function ChatPage({ modeChat }) {
           setShowModalForm(false);
           await fetchUserProfile();
           await fetchConversations();
+          if (uuid) {
+            selectConversation(uuid);
+            console.log("UUID :", uuid);
+          }
         }
       } catch (error) {
         console.error("Error:", error);
@@ -79,9 +80,11 @@ function ChatPage({ modeChat }) {
 
   // Update userProfile and userID
   useEffect(() => {
+    if (!userProfile) return;
     console.log("User profile:", userProfile);
     console.log("User ID:", userId);
-  }, [userProfile, userId]);
+    console.log("Messages:", messages);
+  }, [userProfile, userId, messages]);
 
   const verifyToken = async () => {
     try {
@@ -153,7 +156,6 @@ function ChatPage({ modeChat }) {
     }
   };
 
-  // Fetch conversations
   const fetchConversations = async () => {
     try {
       const response = await fetch(`http://localhost:3000/api/chat/conversations`, {
@@ -189,13 +191,22 @@ function ChatPage({ modeChat }) {
     event.preventDefault();
     if (!currentMessage.trim()) return;
 
-    const newMessages = [...messages, { user: "user", text: currentMessage }];
+    const newMessages = [...messages, { role: "user", parts: [{text: currentMessage }] }];
     setMessages(newMessages);
     setCurrentMessage("");
-    setMessages([...newMessages, { user: "bot", loading: true, text: "" }]);
-    // Generate a UUID and update the URL
-    const newUUID = uuidv4();
-    console.log("New UUID:", newUUID);
+    setMessages([...newMessages, { role: "bot", loading: true, parts: [{text: ""}]} ]);
+    
+    if (!activeConversation) {
+      console.error("No active conversation");
+      return;
+    }
+
+    let newUUID = "";
+    if (activeConversation === null) {
+      newUUID = uuidv4();
+    } else {
+      newUUID = activeConversation;
+    }
     navigate(`/${newUUID}`);
     try {
       const response = await fetch("http://localhost:3000/api/chat", {
@@ -208,27 +219,48 @@ function ChatPage({ modeChat }) {
           message: currentMessage,
           userProfile: userProfile,
           userId: userId,
-          uuid: "7497d6ea-af6c-4eb1-9539-1a9f7c5346f6",
+          uuid: newUUID,
           botId: botId,
         }),
       });
 
       console.log("enviado:", currentMessage, userProfile, userId);
       const data = await response.json();
-      setMessages([...newMessages, { user: "bot", text: data.response }]);
+      setMessages([...newMessages, { role: "bot", parts: [{text: data.response}]}]);
     } catch (error) {
       console.error("Error al obtener la respuesta del bot:", error);
       setMessages([
         ...newMessages,
-        { user: "bot", text: "Hubo un error al responder tu mensaje." },
+        { role: "bot", parts: [{ text: "Error al obtener la respuesta del bot" }]},
       ]);
     }
   };
 
-  const selectConversation = (index) => {
-    setActiveConversation(index);
-    console.log("Conversacion seleccionada:", index);
+  const selectConversation = async (uuid) => {
+    setActiveConversation(uuid);
+    console.log("Conversacion seleccionada:", uuid);
+    try {
+      const response = await fetch(`http://localhost:3000/api/chat/history/${uuid}`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch conversation history");
+      }
+
+      const data = await response.json();
+      console.log("Fetched conversation history:", data.history.slice(2));
+      setMessages(data.history.slice(2));  
+      navigate(`/${uuid}`);
+    } catch (error) {
+      console.error("Error fetching conversation history:", error);
+    }
   };
+
   
 
   const conversationList = conversations.map((conversation, index) => (
@@ -266,7 +298,7 @@ function ChatPage({ modeChat }) {
           className={`btn btn-secondary rounded-full ${
             chatMode === 1 ? "btn-disabled" : ""
           } w-full flex justify-center`}
-          onClick={() => navigate("/")}
+          onClick={() => {navigate("/"), setActiveConversation(null)} }
         >
           <span className="material-symbols-rounded">add</span>
           <span className="hidden xl:flex">Nueva conversación</span>
