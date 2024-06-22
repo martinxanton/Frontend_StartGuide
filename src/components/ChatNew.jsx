@@ -77,15 +77,9 @@ const ChatNew = ({ handleSetCurrentMessage, handleBotId }) => {
 
   const [selectedPersonality, setSelectedPersonality] = useState(null);
 
-  const [theme, setTheme] = useState("night");
-
-  useEffect(() => {
-    const div = document.getElementById("theme-id");
-    div.setAttribute("data-theme", theme);
-  }, [theme]);
 
   return (
-    <div className="flex-grow flex flex-col pt-10 gap-10 px-24">
+    <div className="flex-grow flex flex-col pt-4 gap-10 px-14">
       {!selectedPersonality ? (
         <>
           <div className="flex flex-col gap-1">
@@ -97,11 +91,11 @@ const ChatNew = ({ handleSetCurrentMessage, handleBotId }) => {
               necesidades:
             </p>
           </div>
-          <div className="grid xl:grid-cols-5 lg:grid-cols-3 sm:grid-cols-2 gap-5">
+          <div className="grid xl:grid-cols-5 lg:grid-cols-3 sm:grid-cols-2 gap-5 ">
             {personality.map((person, index) => (
               <div
                 key={index}
-                className="lg:tooltip"
+                className="lg:tooltip "
                 data-tip={person.description}
               >
                 <div
@@ -111,7 +105,7 @@ const ChatNew = ({ handleSetCurrentMessage, handleBotId }) => {
                     handleBotId(index + 1);
                     console.log("botId " + (index + 1));
                   }}
-                  className="group py-8 px-8 flex flex-col drop-shadow-md cursor-pointer bg-base-100 hover:bg-secondary rounded-xl shadow-lg sm:py-4 sm:flex justify-top items-center gap-3 min-h-full"
+                  className="group py-8 px-8 flex flex-col drop-shadow-none cursor-pointer bg-base-100 hover:bg-secondary rounded-lg sm:py-4 sm:flex justify-top items-center gap-3 min-h-full"
                 >
                   <img
                     className="block mx-auto h-16 sm:mx-0 sm:shrink-0"
@@ -123,7 +117,7 @@ const ChatNew = ({ handleSetCurrentMessage, handleBotId }) => {
                       <p className="text-lg text-base-content group-hover:text-white font-semibold">
                         {person.name}
                       </p>
-                      <p className="text-slate-500 group-hover:text-white font-normal">
+                      <p className="text-slate-400 group-hover:text-white font-normal">
                         {person.role}
                       </p>
                     </div>
@@ -148,11 +142,11 @@ const ChatNew = ({ handleSetCurrentMessage, handleBotId }) => {
             </div>
           </div>
 
-          <div className="flex flex-col gap-2 mt-4">
+          <div className="grid grid-cols-2 gap-2 mt-4">
             {selectedPersonality.questions.map((question, index) => (
               <button
                 key={index}
-                className="btn btn-secondary py-2 px-4 text-white rounded-md"
+                className=" h-16 btn btn-secondary text-white"
                 onClick={() => handleSetCurrentMessage(question)}
               >
                 {question}

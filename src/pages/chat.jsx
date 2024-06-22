@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 
-import { useParams,useNavigate } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import {
   ModalSetting,
   ModalProfile,
@@ -11,14 +11,14 @@ import {
 } from "../components";
 import { jwtDecode } from "jwt-decode";
 import { v4 as uuidv4 } from "uuid";
-import { set } from "firebase/database";
 
 function ChatPage({ modeChat }) {
   const [showModalForm, setShowModalForm] = useState(false);
   const [showModalAuth, setShowModalAuth] = useState(false);
   const [messages, setMessages] = useState([]);
-  const [currentMessage, setCurrentMessage] = useState("");   // Mensaje a enviar
+  const [currentMessage, setCurrentMessage] = useState(""); // Mensaje a enviar
   const [activeConversation, setActiveConversation] = useState(null); // Indice de la conversación activa
+  const [menuOption, setMenuOption] = useState(0); // [1, 2, 3, 4]
   const [userProfile, setUserProfile] = useState(null);
   const [chatMode, setChatMode] = useState(1);
   const [userId, setUserId] = useState(null);
@@ -29,6 +29,9 @@ function ChatPage({ modeChat }) {
   const token = localStorage.getItem("token");
   const { uuid } = useParams();
 
+  const handleLogout = () => {
+    navigate("/logout");
+  };
 
   useEffect(() => {
     if (modeChat === 1) {
@@ -163,13 +166,16 @@ function ChatPage({ modeChat }) {
 
   const fetchConversations = async () => {
     try {
-      const response = await fetch(`http://localhost:3000/api/chat/conversations`, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      });
+      const response = await fetch(
+        `http://localhost:3000/api/chat/conversations`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
       console.log("Token:", token);
 
       if (!response.ok) {
@@ -199,13 +205,19 @@ function ChatPage({ modeChat }) {
   const handleSendMessage = async (event) => {
     event.preventDefault();
     if (!currentMessage.trim()) return;
-    setMessages([])
-    console.log("messages:", messages)
-    const newMessages = [...messages, { role: "user", parts: [{text: currentMessage }] }];
+    setMessages([]);
+    console.log("messages:", messages);
+    const newMessages = [
+      ...messages,
+      { role: "user", parts: [{ text: currentMessage }] },
+    ];
     setMessages(newMessages);
     setCurrentMessage("");
-    setMessages([...newMessages, { role: "bot", loading: true, parts: [{text: ""}]} ]);
-    
+    setMessages([
+      ...newMessages,
+      { role: "bot", loading: true, parts: [{ text: "" }] },
+    ]);
+
     let newUUID = "";
     if (!uuid) {
       console.log("No hay UUID");
@@ -215,9 +227,9 @@ function ChatPage({ modeChat }) {
       newUUID = uuid;
       console.log("UUID existente:", newUUID);
     }
-    
 
     navigate(`/${newUUID}`);
+    setActiveConversation(newUUID);
     try {
       const response = await fetch("http://localhost:3000/api/chat", {
         method: "POST",
@@ -236,59 +248,114 @@ function ChatPage({ modeChat }) {
 
       console.log("enviado:", currentMessage, userProfile, userId);
       const data = await response.json();
-      setMessages([...newMessages, { role: "bot", parts: [{text: data.response}]}]);
+      setMessages([
+        ...newMessages,
+        { role: "bot", parts: [{ text: data.response }] },
+      ]);
+      console.log("Conversacion iniciada");
+      await fetchConversations();
+      console.log("Conversaciones despues de enviar:", conversations);
     } catch (error) {
       console.error("Error al obtener la respuesta del bot:", error);
       setMessages([
         ...newMessages,
-        { role: "bot", parts: [{ text: "Error al obtener la respuesta del bot" }]},
+        {
+          role: "bot",
+          parts: [{ text: "Error al obtener la respuesta del bot" }],
+        },
       ]);
     }
-
-
   };
 
   const selectConversation = async (uuid) => {
     setActiveConversation(uuid);
-    setMessages([]);
     console.log("Conversacion seleccionada:", uuid);
     try {
-      const response = await fetch(`http://localhost:3000/api/chat/history/${uuid}`, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      });
+      const response = await fetch(
+        `http://localhost:3000/api/chat/history/${uuid}`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
       if (!response.ok) {
-        throw new Error("Failed to fetch conversation history");
+        navigate("/");
       }
       console.log("Trayendo historial de conversación de: ", uuid);
       const data = await response.json();
       console.log("Fetched conversation history:", data.history.slice(2));
-      setMessages(data.history.slice(2));  
+      console.log("botId:", data.botId);
+      setMessages(data.history.slice(2));
+      setBotId(data.botId);
       navigate(`/${uuid}`);
     } catch (error) {
       console.error("Error fetching conversation history:", error);
     }
   };
 
-  useEffect(() => {
-    conversationList;
-  },[conversations]);
+  const menu = [
+    {
+      name: "Historial",
+      icon: "forum",
+      action: () => { setMenuOption(0) },
+    },
+    {
+      name: "favoritos",
+      icon: "bookmark",
+      action: () => { setMenuOption(1) },
+    },
+    {
+      name: "Perfil",
+      icon: "person",
+      action: () => document.getElementById("modal_profile").showModal(),
+    },
+    {
+      name: "Ajustes",
+      icon: "settings",
+      action: () => document.getElementById("modal_settings").showModal(),
+    },
+    {
+      name: "Cerrar sesión",
+      icon: "logout",
+      action: handleLogout,
+    },
+  ];
 
-  const conversationList = conversations.map((conversation, index) => (
-    <li key={index} onClick={() => selectConversation(conversation.uuid)}>
-      <a className={`p-4 text-wrap   ${activeConversation === conversation.uuid ? "active" : ""}`}>
-        {conversation.title}
+  const conversationList = conversations
+    .slice()
+    .reverse()
+    .map((conversation, index) => (
+      <li
+        key={index}
+        onClick={() => selectConversation(conversation.uuid)}
+        className={`p-5 rounded-2xl text-sm cursor-pointer ${
+          activeConversation === conversation.uuid
+            ? "bg-primary"
+            : "bg-neutral hover:bg-base-100"
+        }`}
+      >
+        <a className={`text-wrap rounded-3xl `}>{conversation.title}</a>
+      </li>
+    ));
+
+  const menuList = menu.map((item, index) => (
+    <li key={index}
+      className={`cursor-pointer flex gap-4 select-none text-slate-400`}
+      onClick={() => item.action()}
+    >
+      <div className={`py-8 rounded-r-md w-2 ${ menuOption == index ? "bg-primary transition duration-600  animate-scaleUp" : "" }`}></div>
+      <a
+        className="tooltip tooltip-right flex items-center"
+        data-tip={item.name}
+      >
+        <span className={`material-symbols-rounded m-0 p-0 ${ menuOption == index ? "text-primary" : "hover:text-white" }`}>{item.icon}</span>
       </a>
     </li>
   ));
-
-  const handleLogout = () => {
-    navigate("/logout");
-  };
 
   if (loading) {
     return (
@@ -299,11 +366,14 @@ function ChatPage({ modeChat }) {
   }
 
   return (
-    <div
-      className="flex h-screen w-screen bg-base-200"
-      id="theme-id"
-      data-theme="night"
-    >
+    <div className="flex h-screen max-h-screen w-screen bg-base-300 gap-6 overflow-hidden">
+      <ul
+        className={`flex flex-col gap-5 justify-center ${
+          token === null ? "blur-sm" : ""
+        }`}
+      >
+        {menuList}
+      </ul>
       <div
         className={`p-5 flex w-1/5 flex-col gap-4 ${
           token === null ? "blur-sm" : ""
@@ -313,34 +383,76 @@ function ChatPage({ modeChat }) {
           className={`btn btn-secondary rounded-full ${
             chatMode === 1 ? "btn-disabled" : ""
           } w-full flex justify-center`}
-          onClick={() => {navigate("/"), setActiveConversation(null)} }
+          onClick={() => {
+            navigate("/"), setActiveConversation(null);
+          }}
         >
           <span className="material-symbols-rounded">add</span>
           <span className="hidden xl:flex">Nueva conversación</span>
         </button>
-        <ul className="menu bg-base-200 h-full ">
-          <li>
-            <h2 className="menu-title px-0 overflow-hidden">Historial de conversaciones</h2>
-            <ul className="mx-1">
-              {conversationList}
-            </ul>
-          </li>
-        </ul>
-        <div className="flex items-center gap-2">
+        <ul className="grow h-full flex flex-col gap-3">{conversationList}</ul>
+      </div>
+      <div className="flex flex-col w-4/5 p-4">
+        <div
+          className={`bg-base-200 rounded-3xl pt-5 drop-shadow-none flex flex-col h-full max-h-full ${
+            token === null ? "blur-sm" : ""
+          }`}
+        >
+          {chatMode === 1 ? (
+            <ChatNew
+              handleSetCurrentMessage={handleSetCurrentMessage}
+              handleBotId={handleBotId}
+            />
+          ) : (
+            <ChatHistory messages={messages} botId={botId} />
+          )}
+          <div className="flex justify-center bg-transparent pb-4">
+            <form onSubmit={handleSendMessage} className="flex gap-2 w-4/5">
+              <input
+                type="text"
+                id="messageInput"
+                className="input input-bordered flex-grow rounded-xl"
+                placeholder="Escribe tu consulta"
+                value={currentMessage}
+                onChange={(e) => setCurrentMessage(e.target.value)}
+              />
+              <button
+                id="sendButton"
+                className="btn btn-secondary w-12 h-12 rounded-xl flex items-center justify-center"
+                type="submit"
+                onClick={() => setChatMode(2)}
+              >
+                <span className="material-symbols-rounded m-0 p-0">
+                  prompt_suggestion
+                </span>
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+      <ModalProfile />
+      <ModalSetting />
+      <ModalAuth show={showModalAuth} />
+      <ModalForms show={showModalForm} handleClose={handleCloseModalForm} />
+    </div>
+  );
+}
+
+export default ChatPage;
+
+/* <div className="flex items-center gap-2">
           <div className="dropdown dropdown-top w-full">
             <div
               tabIndex={0}
               role="button"
-              className="btn btn-ghost w-full rounded-lg gap-5 justify-start"
+              className="btn btn-ghost flex flex-nowrap w-full rounded-lg gap-5 md:justify-start"
             >
-              <div className="w-10 rounded-full">
-                <img
-                  className="rounded-full"
-                  alt="Tailwind CSS Navbar component"
-                  src="https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.jpg"
-                />
-              </div>
-              <h2 className="font-bold">
+              <img
+                className="w-10 rounded-full"
+                alt="Tailwind CSS Navbar component"
+                src="https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.jpg"
+              />
+              <h2 className="font-bold truncate md:block hidden">
                 {token !== null ? (
                   userProfile !== null ? (
                     <p>{userProfile.startupName}</p>
@@ -386,50 +498,4 @@ function ChatPage({ modeChat }) {
               </li>
             </ul>
           </div>
-        </div>
-      </div>
-      <div
-        className={`bg-base-300 rounded-box w-4/5 flex flex-col h-full p-4 ${
-          token === null ? "blur-sm" : ""
-        }`}
-      >
-        {chatMode === 1 ? (
-          <ChatNew
-            handleSetCurrentMessage={handleSetCurrentMessage}
-            handleBotId={handleBotId}
-          />
-        ) : (
-          <ChatHistory messages={messages} />
-        )}
-        <div className="flex justify-center">
-          <form onSubmit={handleSendMessage} className="flex gap-2 w-3/5">
-            <input
-              type="text"
-              id="messageInput"
-              className="input input-bordered flex-grow rounded-full"
-              placeholder="Escribe tu consulta"
-              value={currentMessage}
-              onChange={(e) => setCurrentMessage(e.target.value)}
-            />
-            <button
-              id="sendButton"
-              className="btn btn-secondary btn-circle flex items-center justify-center"
-              type="submit"
-              onClick={() => setChatMode(2)}
-            >
-              <span className="material-symbols-rounded">
-                prompt_suggestion
-              </span>
-            </button>
-          </form>
-        </div>
-      </div>
-      <ModalProfile />
-      <ModalSetting />
-      <ModalAuth show={showModalAuth} />
-      <ModalForms show={showModalForm} handleClose={handleCloseModalForm} />
-    </div>
-  );
-}
-
-export default ChatPage;
+        </div> */

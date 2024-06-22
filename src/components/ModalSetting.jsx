@@ -3,14 +3,14 @@ import { useState, useEffect } from "react";
 
 const ModalSetting = () => {
 
-  const [theme, setTheme] = useState("night");
+  const [theme, setTheme] = useState("myDark");
 
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", theme);
   }, [theme]);
 
   const handleThemeChange = (e) => {
-    setTheme(theme === 'night' ? 'fantasy' : 'night');
+    setTheme(theme === 'myDark' ? 'myLight' : 'myDark');
   };
 
   return (
