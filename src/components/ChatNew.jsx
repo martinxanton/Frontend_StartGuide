@@ -1,12 +1,20 @@
 import React from "react";
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import finn from "../assets/finn.png";
+import brianna from "../assets/brianna.png";
+import mark from "../assets/mark.png";
+import maya from "../assets/maya.png";
+import riley from "../assets/riley.png";
 
-const ChatNew = ({ handleSetCurrentMessage, handleBotId }) => {
+const ChatNew = ({ handleSetCurrentMessage, handleBotId, idRecomendation }) => {
+  const navigate = useNavigate();
   const personality = [
     {
       name: "Finn",
       role: "Asesor general de startups",
-      img: "src/assets/finn.png",
+      id: 1,
+      img: finn,
       theme: "night",
       description:
         "Experto en estrategias de lanzamiento de startups, desarrollo de productos y crecimiento empresarial.",
@@ -18,9 +26,10 @@ const ChatNew = ({ handleSetCurrentMessage, handleBotId }) => {
       ],
     },
     {
-      name: "Mark",
+      name: "Marcus",
       role: "Asesor de Mercado",
-      img: "src/assets/mark.png",
+      id: 2,
+      img: mark,
       theme: "dracula",
       description:
         "Especialista en investigación de mercado, análisis de competencia y tendencias de la industria.",
@@ -34,7 +43,8 @@ const ChatNew = ({ handleSetCurrentMessage, handleBotId }) => {
     {
       name: "Brianna",
       role: "Generadora de Planes de Negocio",
-      img: "src/assets/brianna.png",
+      id: 3,
+      img: brianna,
       theme: "dark",
       description:
         "Experta en estructuración y redacción de planes de negocio completos, incluyendo proyecciones financieras y análisis de mercado.",
@@ -48,7 +58,8 @@ const ChatNew = ({ handleSetCurrentMessage, handleBotId }) => {
     {
       name: "Maya",
       role: "Asesora de Marketing",
-      img: "src/assets/maya.png",
+      id: 4,
+      img: maya,
       theme: "sunset",
       description:
         "Especialista en estrategias de marketing digital, campañas en redes sociales, SEO y análisis de rendimiento.",
@@ -62,7 +73,8 @@ const ChatNew = ({ handleSetCurrentMessage, handleBotId }) => {
     {
       name: "Riley",
       role: "Asesor Financiero",
-      img: "src/assets/riley.png",
+      id: 5,
+      img: riley,
       theme: "forest",
       description:
         "Experto en gestión financiera, presupuestos, búsqueda de fondos y optimización de recursos para startups.",
@@ -75,92 +87,97 @@ const ChatNew = ({ handleSetCurrentMessage, handleBotId }) => {
     },
   ];
 
-  const [selectedPersonality, setSelectedPersonality] = useState(null);
+  const [selectedPersonality, setSelectedPersonality] = useState(
+    personality[0]
+  );
 
+  const [isChecked, setIsChecked] = useState(false);
+
+  useEffect(() => {
+    if (idRecomendation) {
+      if (idRecomendation > 5) {
+        setSelectedPersonality(null);
+        navigate("/u/");
+      } else {
+        setSelectedPersonality(personality[idRecomendation - 1]);
+      }
+    }
+  }, [idRecomendation]);
 
   return (
-    <div className="flex-grow flex flex-col pt-4 gap-10 px-14">
-      {!selectedPersonality ? (
-        <>
+    <div className="flex-grow flex flex-col justify-between overflow-auto">
+      <div className="collapse collapse-arrow border-base-200 bg-base-300 overflow-visible">
+        <input
+          id="collapse-input"
+          type="checkbox"
+          checked={isChecked}
+          onClick={() => {
+            setIsChecked(!isChecked);
+          }}
+        />
+        <div className="collapse-title text-xl font-medium flex gap-5 overflow-visible">
+          <div className="avatar">
+            <div className="h-14 rounded-full">
+              <img src={selectedPersonality.img} />
+            </div>
+          </div>
           <div className="flex flex-col gap-1">
-            <h1 className="text-3xl font-bold">
-              ¡Hola! Soy tu asistente virtual
-            </h1>
-            <p className="text-base">
-              Para comenzar, selecciona el asesor que mejor se adapte a tus
-              necesidades:
+            {selectedPersonality.name}
+            <p className="text-slate-400 group-hover:text-white text-sm">
+              {selectedPersonality.role}
             </p>
           </div>
-          <div className="grid xl:grid-cols-5 lg:grid-cols-3 sm:grid-cols-2 gap-5 ">
-            {personality.map((person, index) => (
-              <div
-                key={index}
-                className="lg:tooltip "
-                data-tip={person.description}
-              >
+        </div>
+        <div className="collapse-content flex flex-col">
+          {personality
+            .filter((person) => person.name != selectedPersonality.name)
+            .map((person, index) => (
+              <>
+                <div className="divider m-0"></div>
                 <div
-                  onClick={() => {
-                    //setTheme(person.theme);
-                    setSelectedPersonality(person);
-                    handleBotId(index + 1);
-                    console.log("botId " + (index + 1));
-                  }}
-                  className="group py-8 px-8 flex flex-col drop-shadow-none cursor-pointer bg-base-100 hover:bg-secondary rounded-lg sm:py-4 sm:flex justify-top items-center gap-3 min-h-full"
+                  key={index}
+                  className="tooltip tooltip-secondary tooltip-bottomb"
+                  data-tip={person.description}
                 >
-                  <img
-                    className="block mx-auto h-16 sm:mx-0 sm:shrink-0"
-                    src={person.img}
-                    alt={person.name}
-                  />
-                  <div className="text-center space-y-2 sm:text-center">
-                    <div className="space-y-0.5">
-                      <p className="text-lg text-base-content group-hover:text-white font-semibold">
-                        {person.name}
-                      </p>
-                      <p className="text-slate-400 group-hover:text-white font-normal">
+                  <div
+                    className="flex gap-5 items-center justify-left py-2 rounded cursor-pointer hover:bg-base-100"
+                    onClick={() => {
+                      setSelectedPersonality(person);
+                      handleBotId(person.id);
+                      navigate(`/u/${person.id}`);
+                      setIsChecked(false);
+                    }}
+                  >
+                    <div className="avatar">
+                      <div className="w-10 rounded-full">
+                        <img src={person.img} />
+                      </div>
+                    </div>
+                    <div className="font-semibold text-left">
+                      <h2 className="text-md">{person.name}</h2>
+                      <p className="text-slate-400 group-hover:text-white text-xs">
                         {person.role}
                       </p>
                     </div>
                   </div>
                 </div>
-              </div>
+              </>
             ))}
-          </div>
-        </>
-      ) : (
-        <div className="flex flex-col gap-3">
-          <div className="flex gap-4 items-center">
-            <img
-              className="block mx-auto h-16 sm:mx-0 sm:shrink-0"
-              src={selectedPersonality.img}
-            />
-            <div>
-            <h2 className="text-2xl font-bold">
-              {"Hola, me llamo " + selectedPersonality.name}
-            </h2>
-            <p className="text-sm">{"" + selectedPersonality.description}</p>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-2 mt-4">
-            {selectedPersonality.questions.map((question, index) => (
-              <button
-                key={index}
-                className=" h-16 btn btn-secondary text-white"
-                onClick={() => handleSetCurrentMessage(question)}
-              >
-                {question}
-              </button>
-            ))}
-          </div>
-          <button
-            className="btn mt-4 py-2 px-4 btn-primary text-white rounded-md"
-            onClick={() => setSelectedPersonality(null)}
-          >
-            Volver
-          </button>
         </div>
-      )}
+      </div>
+      <div className="flex gap-5 justify-center pb-10 items-center">
+        {selectedPersonality.questions.map((question, index) => (
+          <div
+            key={index}
+            className="p-4 rounded-lg border border-white text-white max-w-52 h-full cursor-pointer hover:bg-white/10 text-sm select-none"
+            onClick={() => {
+              handleSetCurrentMessage(question);
+            }}
+          >
+            {question}
+          </div>
+        ))}
+      </div>
     </div>
   );
 };

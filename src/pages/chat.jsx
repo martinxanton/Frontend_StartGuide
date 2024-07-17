@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-
 import { useParams, useNavigate } from "react-router-dom";
 import {
   ModalSetting,
@@ -9,25 +8,28 @@ import {
   ChatNew,
   ChatHistory,
 } from "../components";
+import { Historial } from "../components/menuComponents";
 import { jwtDecode } from "jwt-decode";
 import { v4 as uuidv4 } from "uuid";
 
 function ChatPage({ modeChat }) {
   const [showModalForm, setShowModalForm] = useState(false);
   const [showModalAuth, setShowModalAuth] = useState(false);
+  const [showModalProfile, setShowModalProfile] = useState(false);
   const [messages, setMessages] = useState([]);
   const [currentMessage, setCurrentMessage] = useState(""); // Mensaje a enviar
-  const [activeConversation, setActiveConversation] = useState(null); // Indice de la conversación activa
   const [menuOption, setMenuOption] = useState(0); // [1, 2, 3, 4]
   const [userProfile, setUserProfile] = useState(null);
   const [chatMode, setChatMode] = useState(1);
   const [userId, setUserId] = useState(null);
   const [botId, setBotId] = useState(1); // [1, 2, 3, 4]
+  const [activeConversation, setActiveConversation] = useState(null); // Indice de la conversación activa
   const [conversations, setConversations] = useState([]); // Lista de conversaciones
   const [loading, setLoading] = useState(true); // Estado de carga
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
   const { uuid } = useParams();
+  const { bot } = useParams();
 
   const handleLogout = () => {
     navigate("/logout");
@@ -49,7 +51,9 @@ function ChatPage({ modeChat }) {
         setShowModalForm(false);
         setShowModalAuth(true);
         //console.log("No hay token");
+        navigate("/u/");
         setLoading(false); // Finaliza la carga
+        console.log("No hay token");
         return;
       }
       //console.log("Token:", token);
@@ -93,6 +97,10 @@ function ChatPage({ modeChat }) {
   useEffect(() => {
     if (!userProfile) return;
   }, [userProfile, userId]);
+
+  useEffect(() => {
+    console.log("botId", botId);
+  }, [botId]);
 
   const verifyToken = async () => {
     try {
@@ -194,6 +202,10 @@ function ChatPage({ modeChat }) {
     setShowModalForm(false);
   };
 
+  const handleCloseModalProfile = () => {
+    setShowModalProfile(false);
+  };
+
   const handleBotId = (id) => {
     setBotId(id);
   };
@@ -204,7 +216,10 @@ function ChatPage({ modeChat }) {
 
   const handleSendMessage = async (event) => {
     event.preventDefault();
+    await fetchUserProfile();
+    console.log("Prueba")
     if (!currentMessage.trim()) return;
+    setChatMode(2);
     setMessages([]);
     console.log("messages:", messages);
     const newMessages = [
@@ -283,40 +298,45 @@ function ChatPage({ modeChat }) {
       );
 
       if (!response.ok) {
-        navigate("/");
+        navigate("/u/");
       }
       console.log("Trayendo historial de conversación de: ", uuid);
       const data = await response.json();
       console.log("Fetched conversation history:", data.history.slice(2));
-      console.log("botId:", data.botId);
       setMessages(data.history.slice(2));
-      setBotId(data.botId);
+      await handleBotId(data.botId);
       navigate(`/${uuid}`);
     } catch (error) {
       console.error("Error fetching conversation history:", error);
     }
   };
 
+  const handleSetActiveConversation = (uuid) => {
+    console.log("Conversacion activa:", uuid);
+    setActiveConversation(uuid);
+  };
+
   const menu = [
     {
       name: "Historial",
       icon: "forum",
-      action: () => { setMenuOption(0) },
-    },
-    {
-      name: "favoritos",
-      icon: "bookmark",
-      action: () => { setMenuOption(1) },
+      action: () => {
+        setMenuOption(0);
+      },
     },
     {
       name: "Perfil",
       icon: "person",
-      action: () => document.getElementById("modal_profile").showModal(),
+      action: () => {
+        setShowModalProfile(true);
+        console.log("Perfil");
+      },
     },
     {
       name: "Ajustes",
       icon: "settings",
-      action: () => document.getElementById("modal_settings").showModal(),
+      action: () =>
+        document.getElementById("modal_settings").classList.add("modal-open"),
     },
     {
       name: "Cerrar sesión",
@@ -325,34 +345,30 @@ function ChatPage({ modeChat }) {
     },
   ];
 
-  const conversationList = conversations
-    .slice()
-    .reverse()
-    .map((conversation, index) => (
-      <li
-        key={index}
-        onClick={() => selectConversation(conversation.uuid)}
-        className={`p-5 rounded-2xl text-sm cursor-pointer ${
-          activeConversation === conversation.uuid
-            ? "bg-primary"
-            : "bg-neutral hover:bg-base-100"
-        }`}
-      >
-        <a className={`text-wrap rounded-3xl `}>{conversation.title}</a>
-      </li>
-    ));
-
   const menuList = menu.map((item, index) => (
-    <li key={index}
+    <li
+      key={index}
       className={`cursor-pointer flex gap-4 select-none text-slate-400`}
       onClick={() => item.action()}
     >
-      <div className={`py-8 rounded-r-md w-2 ${ menuOption == index ? "bg-primary transition duration-600  animate-scaleUp" : "" }`}></div>
+      <div
+        className={`py-8 rounded-r-md w-2 ${
+          menuOption == index
+            ? "bg-primary transition duration-600  animate-scaleUp"
+            : ""
+        }`}
+      ></div>
       <a
         className="tooltip tooltip-right flex items-center"
         data-tip={item.name}
       >
-        <span className={`material-symbols-rounded m-0 p-0 ${ menuOption == index ? "text-primary" : "hover:text-white" }`}>{item.icon}</span>
+        <span
+          className={`material-symbols-rounded m-0 p-0 ${
+            menuOption == index ? "text-primary" : "hover:text-white"
+          }`}
+        >
+          {item.icon}
+        </span>
       </a>
     </li>
   ));
@@ -368,33 +384,25 @@ function ChatPage({ modeChat }) {
   return (
     <div className="flex h-screen max-h-screen w-screen bg-base-300 gap-6 overflow-hidden">
       <ul
-        className={`flex flex-col gap-5 justify-center ${
+        className={`laptop:flex hidden flex-col gap-5 justify-center ${
           token === null ? "blur-sm" : ""
         }`}
       >
         {menuList}
       </ul>
-      <div
-        className={`p-5 flex w-1/5 flex-col gap-4 ${
-          token === null ? "blur-sm" : ""
-        }`}
-      >
-        <button
-          className={`btn btn-secondary rounded-full ${
-            chatMode === 1 ? "btn-disabled" : ""
-          } w-full flex justify-center`}
-          onClick={() => {
-            navigate("/"), setActiveConversation(null);
-          }}
-        >
-          <span className="material-symbols-rounded">add</span>
-          <span className="hidden xl:flex">Nueva conversación</span>
-        </button>
-        <ul className="grow h-full flex flex-col gap-3">{conversationList}</ul>
+      <div className={`laptop:flex hidden ${token === null ? "blur-sm" : ""}`}>
+        <Historial
+          chatMode={chatMode}
+          activeConversation={activeConversation}
+          conversations={conversations}
+          handleSetActiveConversation={handleSetActiveConversation}
+          selectConversation={selectConversation}
+          handleBotId={handleBotId}
+        />
       </div>
-      <div className="flex flex-col w-4/5 p-4">
+      <div className="flex flex-col grow p-4">
         <div
-          className={`bg-base-200 rounded-3xl pt-5 drop-shadow-none flex flex-col h-full max-h-full ${
+          className={`bg-base-200 rounded-3xl p-5 drop-shadow-none flex flex-col h-full max-h-full ${
             token === null ? "blur-sm" : ""
           }`}
         >
@@ -402,12 +410,17 @@ function ChatPage({ modeChat }) {
             <ChatNew
               handleSetCurrentMessage={handleSetCurrentMessage}
               handleBotId={handleBotId}
+              idRecomendation={bot}
             />
           ) : (
-            <ChatHistory messages={messages} botId={botId} />
+            <ChatHistory
+              handleSetCurrentMessage={handleSetCurrentMessage}
+              messages={messages}
+              botId={botId}
+              handleSetActiveConversation={handleSetActiveConversation}
+            />
           )}
-          <div className="flex justify-center bg-transparent pb-4">
-            <form onSubmit={handleSendMessage} className="flex gap-2 w-4/5">
+          <form onSubmit={handleSendMessage} className="flex gap-2">
               <input
                 type="text"
                 id="messageInput"
@@ -420,17 +433,23 @@ function ChatPage({ modeChat }) {
                 id="sendButton"
                 className="btn btn-secondary w-12 h-12 rounded-xl flex items-center justify-center"
                 type="submit"
-                onClick={() => setChatMode(2)}
               >
                 <span className="material-symbols-rounded m-0 p-0">
                   prompt_suggestion
                 </span>
               </button>
             </form>
-          </div>
         </div>
       </div>
-      <ModalProfile />
+      {
+        showModalProfile && (
+          <ModalProfile
+            userProfile={userProfile}
+            show={showModalProfile}
+            handleCloseModalProfile={handleCloseModalProfile}
+          />
+        )
+      }
       <ModalSetting />
       <ModalAuth show={showModalAuth} />
       <ModalForms show={showModalForm} handleClose={handleCloseModalForm} />
@@ -439,63 +458,3 @@ function ChatPage({ modeChat }) {
 }
 
 export default ChatPage;
-
-/* <div className="flex items-center gap-2">
-          <div className="dropdown dropdown-top w-full">
-            <div
-              tabIndex={0}
-              role="button"
-              className="btn btn-ghost flex flex-nowrap w-full rounded-lg gap-5 md:justify-start"
-            >
-              <img
-                className="w-10 rounded-full"
-                alt="Tailwind CSS Navbar component"
-                src="https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.jpg"
-              />
-              <h2 className="font-bold truncate md:block hidden">
-                {token !== null ? (
-                  userProfile !== null ? (
-                    <p>{userProfile.startupName}</p>
-                  ) : (
-                    <p>Usuario</p>
-                  )
-                ) : (
-                  <p>Usuario</p>
-                )}
-              </h2>
-            </div>
-            <ul
-              tabIndex={0}
-              className="mt-3 z-[1] p-2 shadow menu menu-sm dropdown-content bg-base-100 rounded-box w-52"
-            >
-              <li>
-                <a
-                  className="py-2 font-medium"
-                  onClick={() =>
-                    document.getElementById("modal_profile").showModal()
-                  }
-                >
-                  <span className="material-symbols-rounded">person</span>
-                  Perfil
-                </a>
-              </li>
-              <li>
-                <a
-                  className="py-2 font-medium"
-                  onClick={() =>
-                    document.getElementById("modal_settings").showModal()
-                  }
-                >
-                  <span className="material-symbols-rounded">settings</span>
-                  Ajustes
-                </a>
-              </li>
-              <li>
-                <a className="py-2 font-medium" onClick={handleLogout}>
-                  <span className="material-symbols-rounded">logout</span>
-                  Cerrar sesion
-                </a>
-              </li>
-            </ul>
-          </div>
-        </div> */

@@ -12,7 +12,7 @@ const LoginPage = () => {
 
   useEffect(() => {
     if (token) {
-      navigate("/");
+      navigate("/u/");
     }
   }, [token]);
 
@@ -31,7 +31,7 @@ const LoginPage = () => {
           const { token } = response.data;
           const decodedToken = jwtDecode(token);
           localStorage.setItem("token", token);
-          navigate("/");
+          navigate("/u/");
         })
         .catch((err) => {
           if (err.response && err.response.data && err.response.data.msg) {
@@ -46,7 +46,7 @@ const LoginPage = () => {
 
   return (
     <div className="hero min-h-screen bg-base-200 w-full flex items-center justify-center">
-      <main className="bg-base-100 w-3/12 p-12 rounded-lg shadow-lg">
+      <main className="bg-base-100 p-12 rounded-lg shadow-lg">
         <form onSubmit={handleSubmit} className="space-y-6">
           <h1 className="text-2xl font-semibold text-center">Iniciar Sesión</h1>
           <p className="text-sm">

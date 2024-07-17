@@ -11,13 +11,13 @@ import axios from "axios";
 import { jwtDecode } from "jwt-decode";
 
 const ModalForms = ({ show, handleClose }) => {
-const token = localStorage.getItem("token");
+  const token = localStorage.getItem("token");
 
-if (!token) {
-  return null;
-}
+  if (!token) {
+    return null;
+  }
 
-const userId = jwtDecode(token).user.id;
+  const userId = jwtDecode(token).user.id;
 
   const [formValues, setFormValues] = useState({
     id: userId,
@@ -33,7 +33,6 @@ const userId = jwtDecode(token).user.id;
     strengths: "",
     challenges: "",
   });
-  
 
   const handleInputChange = (field, value) => {
     setFormValues((prevValues) => ({
@@ -53,7 +52,6 @@ const userId = jwtDecode(token).user.id;
   };
 
   useEffect(() => {
-    
     const prevButton = document.getElementById("prevButton");
     if (prevButton === null) return;
     if (activeStep === 0) {
@@ -68,23 +66,35 @@ const userId = jwtDecode(token).user.id;
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    if (!formValues.startupName || !formValues.description || !formValues.industry || !formValues.developmentStage || !formValues.numberOfEmployees || !formValues.location || !formValues.mainGoals || !formValues.neededResources || !formValues.mainCompetitors || !formValues.strengths || !formValues.challenges) {
+    if (
+      !formValues.startupName ||
+      !formValues.description ||
+      !formValues.industry ||
+      !formValues.developmentStage ||
+      !formValues.numberOfEmployees ||
+      !formValues.location ||
+      !formValues.mainGoals ||
+      !formValues.neededResources ||
+      !formValues.mainCompetitors ||
+      !formValues.strengths ||
+      !formValues.challenges
+    ) {
       alert("Por favor, completa todos los campos");
       return;
     } else {
       axios
-      .post("http://localhost:3000/api/profile/", formValues, { headers: { Authorization: `Bearer ${token}` }})
-      .then((response) => {
-        console.log(response.data);
-      })
-      .catch((error) => {
-        console.error(error);
-      });
-    handleClose();
+        .post("http://localhost:3000/api/profile/", formValues, {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+        .then((response) => {
+          console.log(response.data);
+        })
+        .catch((error) => {
+          console.error(error);
+        });
+      handleClose();
     }
-    
   };
-
 
   if (!show) return null;
   return (

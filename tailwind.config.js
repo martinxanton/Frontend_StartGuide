@@ -5,6 +5,11 @@ export default {
     "./src/**/*.{js,jsx,ts,tsx}",
   ],
   theme: {
+    screens: {
+      'tablet': '640px',
+      'laptop': '1024px',
+      'desktop': '1280px',
+    },
     extend: {
       keyframes: {
         scaleUp: {
@@ -48,7 +53,7 @@ export default {
               900: '#13514b',
             },
           },
-          'primary': '#a3c8ed',         //300,
+          'primary': '#458eed',         //300,
           'primary-focus': '#458eed',   //400
           'primary-content': '#0c3a67', //900  
           'secondary': '#458eed',       //300
@@ -57,7 +62,7 @@ export default {
           'accent': colors.fuchsia[300],
           'accent-focus': colors.fuchsia[400],
           'accent-content': colors.fuchsia[900],
-          'neutral': colors.neutral[900],
+          'neutral': '#f2f2f2',
           'neutral-focus': colors.neutral[700],
           'neutral-content': colors.neutral[50],
           'base-100': '#ffffff',
@@ -109,7 +114,7 @@ export default {
           'accent': colors.fuchsia[700],
           'accent-focus': colors.fuchsia[500],
           'accent-content': colors.fuchsia[50],
-          'neutral': '#333644',
+          'neutral': '#303340',
           'neutral-focus': colors.neutral[200],
           'neutral-content': '#ffffff',
           'base-100': '#434656',
