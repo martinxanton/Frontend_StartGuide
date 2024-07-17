@@ -19,7 +19,7 @@ const ChatHistory = ({
   const [userBot, setUserBot] = useState({});
   const navigate = useNavigate();
 
-  handleSetCurrentMessage("");
+  
 
   const copyToClipboard = (index) => {
     const textToCopy = spanRefs.current[index]?.textContent;
