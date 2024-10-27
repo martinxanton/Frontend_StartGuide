@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import axios from "axios";
 const apiUrl = import.meta.env.VITE_API_URL;
 const LoginPage = () => {
@@ -51,9 +51,9 @@ const LoginPage = () => {
           <h1 className="text-2xl font-semibold text-center">Iniciar Sesión</h1>
           <p className="text-sm">
             ¿Aún no tienes cuenta?{" "}
-            <a href="/auth/register" className="link font-bold">
+            <Link href="/auth/register" className="link font-bold">
               Registrarme
-            </a>
+            </Link>
           </p>
           <label
             htmlFor="floatingInput"

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import axios from "axios";
 const apiUrl = import.meta.env.VITE_API_URL;
 const RegisterPage = () => {
@@ -44,7 +44,7 @@ const RegisterPage = () => {
       <main className="bg-base-100 w-3/12 p-12 rounded-lg shadow-lg">
         <form onSubmit={handleSubmit} className="space-y-6">
           <h1 className="text-2xl font-semibold text-center">Registrarse</h1>
-          <p className="text-sm">¿Ya tienes cuenta? <a href="/auth/login" className="link font-bold">Iniciar sesión</a></p>
+          <p className="text-sm">¿Ya tienes cuenta? <Link to="/auth/login" className="link font-bold">Iniciar sesión</Link></p>
           <label htmlFor="username" className="sr-only">Nombre de usuario</label>
             <input
               type="text"
