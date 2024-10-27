@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-
+const apiUrl = import.meta.env.VITE_API_URL;
 const RegisterPage = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -14,7 +14,7 @@ const RegisterPage = () => {
     if (token) {
       navigate("/");
     }
-  }, [token]);
+  }, [token, navigate]);
 
   const handleSubmit = (event) => {
     event.preventDefault();
@@ -25,7 +25,7 @@ const RegisterPage = () => {
     } else {
       setError("");
       axios
-        .post("http://localhost:3000/api/auth/register", {
+        .post(`${apiUrl}/api/auth/register`, {
           username: username,
           password: password,
         })

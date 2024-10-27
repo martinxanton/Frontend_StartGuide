@@ -1,8 +1,7 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { jwtDecode } from "jwt-decode";
-
+const apiUrl = import.meta.env.VITE_API_URL;
 const LoginPage = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -14,24 +13,25 @@ const LoginPage = () => {
     if (token) {
       navigate("/u/");
     }
-  }, [token]);
+  }, [token, navigate]);
 
   const handleSubmit = (event) => {
+    console.log("submit");
+    console.log(`${apiUrl}/api/auth/login`);
     event.preventDefault();
     if (!username || !password) {
       setError("Por favor, ingresa el nombre de usuario y la contraseña");
     } else {
       setError("");
       axios
-        .post("http://localhost:3000/api/auth/login", {
+        .post(`${apiUrl}/api/auth/login`, {
           username: username,
           password: password,
         })
         .then((response) => {
           const { token } = response.data;
-          const decodedToken = jwtDecode(token);
           localStorage.setItem("token", token);
-          navigate("/u/");
+          navigate("/u/1");
         })
         .catch((err) => {
           if (err.response && err.response.data && err.response.data.msg) {

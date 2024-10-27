@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
+import PropTypes from 'prop-types';
 import { useParams, useNavigate } from "react-router-dom";
 import {
   ModalSetting,
@@ -11,6 +12,7 @@ import {
 import { Historial } from "../components/menuComponents";
 import { jwtDecode } from "jwt-decode";
 import { v4 as uuidv4 } from "uuid";
+const apiUrl = import.meta.env.VITE_API_URL;
 
 function ChatPage({ modeChat }) {
   const [showModalForm, setShowModalForm] = useState(false);
@@ -105,7 +107,7 @@ function ChatPage({ modeChat }) {
   const verifyToken = async () => {
     try {
       const response = await fetch(
-        "http://localhost:3000/api/profile/verify-token",
+        `${apiUrl}/api/profile/verify-token`,
         {
           method: "GET",
           headers: {
@@ -130,7 +132,7 @@ function ChatPage({ modeChat }) {
 
   const fetchUserProfile = async () => {
     try {
-      const response = await fetch(`http://localhost:3000/api/profile`, {
+      const response = await fetch(`${apiUrl}/api/profile`, {
         method: "GET",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -152,7 +154,7 @@ function ChatPage({ modeChat }) {
 
   const verifyInfoUserProfile = async () => {
     try {
-      const response = await fetch(`http://localhost:3000/api/profile/exists`, {
+      const response = await fetch(`${apiUrl}/api/profile/exists`, {
         method: "GET",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -175,7 +177,7 @@ function ChatPage({ modeChat }) {
   const fetchConversations = async () => {
     try {
       const response = await fetch(
-        `http://localhost:3000/api/chat/conversations`,
+        `${apiUrl}/api/chat/conversations`,
         {
           method: "GET",
           headers: {
@@ -246,7 +248,7 @@ function ChatPage({ modeChat }) {
     navigate(`/${newUUID}`);
     setActiveConversation(newUUID);
     try {
-      const response = await fetch("http://localhost:3000/api/chat", {
+      const response = await fetch(`${apiUrl}/api/chat`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -287,7 +289,7 @@ function ChatPage({ modeChat }) {
     console.log("Conversacion seleccionada:", uuid);
     try {
       const response = await fetch(
-        `http://localhost:3000/api/chat/history/${uuid}`,
+        `${apiUrl}/api/chat/history/${uuid}`,
         {
           method: "GET",
           headers: {
@@ -456,5 +458,9 @@ function ChatPage({ modeChat }) {
     </div>
   );
 }
+
+ChatPage.propTypes = {
+  modeChat: PropTypes.number.isRequired,
+};
 
 export default ChatPage;

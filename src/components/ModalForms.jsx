@@ -9,6 +9,7 @@ import {
 } from "./modalFormsComponents";
 import axios from "axios";
 import { jwtDecode } from "jwt-decode";
+const apiUrl = import.meta.env.API_URL;
 
 const ModalForms = ({ show, handleClose }) => {
   const token = localStorage.getItem("token");
@@ -83,7 +84,7 @@ const ModalForms = ({ show, handleClose }) => {
       return;
     } else {
       axios
-        .post("http://localhost:3000/api/profile/", formValues, {
+        .post(`${apiUrl}/api/profile/`, formValues, {
           headers: { Authorization: `Bearer ${token}` },
         })
         .then((response) => {

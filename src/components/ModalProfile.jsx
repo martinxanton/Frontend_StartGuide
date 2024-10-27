@@ -2,6 +2,7 @@ import React from "react";
 import { useState, useEffect } from "react";
 import axios from "axios";
 
+const apiUrl = import.meta.env.API_URL;
 
 const ModalProfile = ({userProfile, show, handleCloseModalProfile}) => {
   const token = localStorage.getItem("token");
@@ -87,7 +88,7 @@ const ModalProfile = ({userProfile, show, handleCloseModalProfile}) => {
       return;
     } else {
       axios
-      .put("http://localhost:3000/api/profile/", formValues, { headers: { Authorization: `Bearer ${token}` }})
+      .put(`${apiUrl}/api/profile/`, formValues, { headers: { Authorization: `Bearer ${token}` }})
       .then((response) => {
         console.log(response.data);
       })

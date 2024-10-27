@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import axios from "axios";
-
+const apiUrl = import.meta.env.API_URL;
 function ModalForm({ show, handleClose }) {
   const [formData, setFormData] = useState({
     userName: "",
@@ -25,7 +25,7 @@ function ModalForm({ show, handleClose }) {
   const handleSubmit = (e) => {
     e.preventDefault();
     axios
-      .post("http://localhost:3000/api/user-profile", formData)
+      .post(`https://${apiUrl}/api/user-profile`, formData)
       .then((response) => {
         // Manejo de respuesta exitosa
         console.log(response.data);
