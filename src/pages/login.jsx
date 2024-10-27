@@ -51,7 +51,7 @@ const LoginPage = () => {
           <h1 className="text-2xl font-semibold text-center">Iniciar Sesión</h1>
           <p className="text-sm">
             ¿Aún no tienes cuenta?{" "}
-            <Link href="/auth/register" className="link font-bold">
+            <Link to="/auth/register" className="link font-bold">
               Registrarme
             </Link>
           </p>
